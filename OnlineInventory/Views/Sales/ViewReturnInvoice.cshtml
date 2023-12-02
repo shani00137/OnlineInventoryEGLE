@@ -1,0 +1,189 @@
+﻿@model IEnumerable<OnlineInventory.Models.InvoiceInfoMD>
+@{
+    ViewBag.Title = "ViewReturnInvoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script>
+    function show () {
+  document.getElementById("spinner").classList.add("show");
+}
+function hide () {
+  document.getElementById("spinner").classList.remove("show");
+}
+    $(function () {
+        show();
+        $.ajax({
+            type: "Get",
+            url: "/Sales/GetAllReturnInvoices",
+            data: { customerId: 0 },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                debugger;
+                $('#invoiceTable tbody').empty();
+                var count = 0;
+                $.each(data, function (i, item) {
+                    count = item.ReturnInvoiceNo.replace('RINV','');
+                    var rows = "<tr>"
+                        + "<td >" + item.ReturnInvoiceNo + "</td>"
+                        + "<td>" +ConvertJsonDateToDateTime(  item.InvoiceDate) + "</td>"
+                        + "<td>" + item.Name + "</td>"
+                        + "<td class='hidden-480'>" +item.CreatedBy + "</td>"
+                        + "<td class='hidden-480'>" + ConvertJsonDateToDateTime( item.CreatedDate) + "</td>"
+                        + "<td class='hidden-480'>" + item.Remarks + "</td>"
+                        + "<td>" + "<button data-toggle='modal' data-target='#exampleModal' onclick='viewDetail(" + count + ");' class='btn btn-xs btn-info'><i class='icon- icon-book bigger-120'></i></button> "+ "</td>"
+
+                        + "</tr>";
+                    $('#invoiceTable tbody').append(rows);
+                });
+                hide();
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+    });
+   
+
+    function viewDetail(val) {
+        $('#myModal').on('shown.bs.modal', function () {
+
+        });
+          $.ajax({
+            type: 'GET',
+            url: "/Sales/GetReturnInvoiceDetails",
+            datatype: JSON,
+            data: { ReturnInvoiceNo: 'RINV'+val },
+              success: function (data) {
+                 $('#detailTable tbody').empty();
+                 $.each(data, function (i, item) {
+                 
+                    var rows = "<tr>"
+                        + "<td >" + item.ItemId + '('+item.ItemCode+')'+ "</td>"
+                        + "<td >" + item.ItemName + "</td>"
+                        + "<td>" +item.Quantity + "</td>"
+                        + "<td>" + item.Rate + "</td>"
+                        + "<td>" +item.Amount + "</td>"
+                       
+                        + "</tr>";
+                    $('#detailTable tbody').append(rows);
+                });
+            },
+            error: function (data) { }
+        });
+    }
+ 
+     function ConvertJsonDateToDateTime(date) {
+                var parsedDate = new Date(parseInt(date.substr(6)));
+                var newDate = new Date(parsedDate);
+                var month = ('0' + (newDate.getMonth() + 1)).slice(-2);
+                var day = ('0' + newDate.getDate()).slice(-2);
+                var year = newDate.getFullYear();
+                return day + "/" + month + "/" + year;
+            }
+</script>
+
+<div class="page-content">
+
+
+    <div class="row">
+        <div class="col-xs-12">
+            <!-- PAGE CONTENT BEGINS -->
+
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <div id="spinner">
+                        @*<img src="~/Content/spiner.gif" />*@
+                        <i class="icon-spinner icon-spin orange bigger-300"></i>
+                    </div>
+
+
+
+                    <div class="pull-right">
+                        <a href="@Url.Action("SaleInvoiceReturn", "Sales")" class="btn-new-mail">
+                            <span class="btn bt1n-small btn-purple no-border">
+                                <i class=" icon-file bigger-130"></i>
+                                <span class="bigger-110">Create New</span>
+                            </span>
+                        </a>
+                    </div><!-- ./li-new-mail -->
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            Manage Return Invoices
+                        </div>
+                        <div class="panel-body">
+                            <table id="invoiceTable" class="table  table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="detail-col">Invoice No.</th>
+                                        <th class="detail-col">Invoice Date</th>
+                                        <th class="detail-col">Name</th>
+                                        <th class="detail-col hidden-480">Created By</th>
+                                        <th class="detail-col hidden-480">Created On</th>
+                                        <th class="detail-col hidden-480">Remarks</th>
+                                        <th class="detail-col">Action</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var m in Model)
+                                    {
+                                        <tr>
+                                            <td>@Html.DisplayFor(modelItem => m.ReturnInvoiceNo)</td>
+                                            <td>@Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")</td>
+                                            <td>@Html.DisplayFor(modelItem => m.Name)</td>
+                                            <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedBy)</td>
+                                            <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedDate, "{0:d MMM yyyy}")</td>
+                                            <td>@Html.DisplayFor(modelItem => m.Remarks)</td>
+                                            <td>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+
+</div><!-- /.page-content -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Product Details</h5>
+            
+            </div>
+            <div class="modal-body">
+                <table id="detailTable" class="table  table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="detail-col">Item No & Code</th>
+                            <th class="detail-col">Name</th>
+                            <th class="detail-col">Quantity</th>
+                            <th class="detail-col">Rate</th>
+                            <th class="detail-col">Amount</th>
+
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                     
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,270 @@
+﻿@model IEnumerable<OnlineInventory.Models.InvoiceInfoMD>
+@{
+    ViewBag.Title = "ViewInvoices";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script>
+    $('.select2').select();
+    function show () {
+  document.getElementById("spinner").classList.add("show");
+}
+function hide () {
+  document.getElementById("spinner").classList.remove("show");
+    }
+
+    function selectedCustomerChangeEvent(sel) {
+        ////alert(sel.value);
+        //ShowInvoices(sel.value);
+    }
+
+    function func_validate() {
+        var chk = 0;
+        debugger;
+        var CustomerID = document.getElementById('ddlCustomers');
+        if (CustomerID.value == 0) {
+            CustomerID.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            CustomerID.style.border = "1px solid #ccc";
+        }
+
+        var FromDate = document.getElementById('FromDate');
+        var ToDate = document.getElementById('ToDate');
+
+        if (FromDate.value == 0) {
+            FromDate.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+                 FromDate.style.border = "1px solid #ccc";
+        }
+
+        if (ToDate.value == 0) {
+            ToDate.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            ToDate.style.border = "1px solid #ccc";
+        }
+
+        if (chk != 0)
+            return false;
+        else
+            return true;
+
+
+
+    }
+    function ViewInvoices() {
+
+        //if (func_validate() == false) {
+        //    return;
+        //}
+
+        show();
+        $.ajax({
+            type: "Get",
+            url: "/Sales/GetAllInvoices",
+            data: {
+                CustId: $("#ddlCustomers").val(),
+                FromDate: $("#FromDate").val(),
+                ToDate: $("#ToDate").val(),
+                InvoiceNo: $("#InvoiceNo").val()
+            },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                debugger;
+                $('#invoiceTable tbody').empty();
+                var count = 0;
+                $.each(data, function (i, item) {
+                    count = item.InvoiceNo.replace('INV','');
+                    var rows = "<tr>"
+                        + "<td >" + item.InvoiceNo + "</td>"
+                        + "<td>" +ConvertJsonDateToDateTime(  item.InvoiceDate) + "</td>"
+                        + "<td>" + item.Name + "</td>"
+                        + "<td>" + item.TotalAmount + "</td>"
+
+                        + "<td class='hidden-480'>" + item.Remarks + "</td>"
+                        + "<td>" + "<button onclick='Edit(" + count + ");' class='btn btn-xs btn-info'><i class='icon-pencil bigger-120'></i></button> <span></span> <button onclick='exportInvoice(" + count + ");' class='btn btn-xs btn-success'><i class='icon-print bigger-120'></i></button> " + "</td>"
+
+                        + "</tr>";
+                    $('#invoiceTable tbody').append(rows);
+                });
+                hide();
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+
+    }
+
+    $(function () {
+        $("#FromDate").empty();
+        $("#ToDate").empty();
+
+        $("#FromDate").datepicker();
+        $("#ToDate").datepicker();
+    })
+        $(function () {
+        var ddlCustomers = $("#ddlCustomers");
+        ddlCustomers.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+        var ddlItemList = $("#ddlItemList");
+
+        $("#progressBar").hide();
+        ddlItemList.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+
+        $.ajax({
+            type: "Get",
+            url: "/Inventory/LoadGridCustomer",
+            data: { customerId: 0 },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                ddlCustomers.empty().append('<option selected="selected" value="0">Please select Customer</option>');
+                $.each(response, function () {
+                    ddlCustomers.append($("<option></option>").val(this['CustomerId']).html(this['Name']));
+                });
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+
+    });
+    function exportInvoice(inv)
+    {
+       var url = "@Url.Action("ExportInvoiceReport", "Reports")";
+        var InvoiceNo ='INV'+ inv;
+        window.open(url + "?InvoiceNo=" + InvoiceNo , '_blank');
+    }
+
+    function Edit(val) {
+        var url = "@Url.Action("SaleInvoice", "Sales", new { InvoiceNo = "InvNo" })";
+        var InvoiceNo = 'INV' + val;
+        url = url.replace("InvNo", InvoiceNo);
+        window.location = url;
+    }
+     function ConvertJsonDateToDateTime(date) {
+                var parsedDate = new Date(parseInt(date.substr(6)));
+                var newDate = new Date(parsedDate);
+                var month = ('0' + (newDate.getMonth() + 1)).slice(-2);
+                var day = ('0' + newDate.getDate()).slice(-2);
+                var year = newDate.getFullYear();
+                return day + "/" + month + "/" + year;
+            }
+</script>
+
+<div class="page-content">
+    <div class="row">
+        <div class="col-xs-12">
+            <!-- PAGE CONTENT BEGINS -->
+
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <div id="spinner">
+                        @*<img src="~/Content/spiner.gif" />*@
+                        <i class="icon-spinner icon-spin orange bigger-300"></i>
+                    </div>
+
+                    <div class="pull-right">
+                        <a href="@Url.Action("SaleInvoice", "Sales")" class="btn-new-mail">
+                            <span class="btn bt1n-small btn-purple no-border">
+                                <i class=" icon-file bigger-130"></i>
+                                <span class="bigger-110">Create New</span>
+                            </span>
+                        </a>
+                    </div><!-- ./li-new-mail -->
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            Manage Invoices
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-md-12">
+                                <div class="row">
+                                
+                                </div>
+
+                                <div class="=row">
+                                    <div class="col-md-3 col-sm-12">
+                                        <div class="form-group col-sm-12">
+                                            <label class="col-sm-12 control-label no-padding-right">Invoice No </label>
+                                            <input  class="form-control col-sm-12" type="text" id="InvoiceNo" placeholder="Invoice No">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-12">
+                                        <div class="form-group col-sm-12">
+                                            <label class="col-sm-12 control-label no-padding-right">To Customer </label>
+                                            <select class="select2 col-sm-12" id="ddlCustomers" onchange="selectedCustomerChangeEvent(this);"></select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-sm-12">
+                                        <div class="form-group col-sm-12">
+                                            <label class="col-sm-12 control-label no-padding-right">From Date </label>
+                                            <input  class="form-control col-sm-12" type="text" id="FromDate" placeholder="From Date">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 col-sm-12">
+                                        <div class="form-group col-sm-12">
+                                            <label class="col-sm-12 control-label no-padding-right">To Date </label>
+                                            <input  class="form-control col-sm-12" type="text" id="ToDate" placeholder="To Date">
+
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group col-sm-12">
+                                            <label style="color:white" class="col-sm-3 control-label no-padding-right" for="form-field-1">Amount </label>
+                                            <button onclick="ViewInvoices();" class="btn btn-info btn-block">Search</button>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <table id="invoiceTable" class="table  table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="detail-col">Invoice No.</th>
+                                    <th class="detail-col">Invoice Date</th>
+                                    <th class="detail-col">Customer</th>
+                                    <th class="detail-col hidden-480">Total Amount</th>
+                                    <th class="detail-col hidden-480">Remarks</th>
+                                    <th class="detail-col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var m in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(modelItem => m.InvoiceNo)</td>
+                                        <td>@Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")</td>
+                                        <td>@Html.DisplayFor(modelItem => m.Name)</td>
+                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedBy)</td>
+                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedDate, "{0:d MMM yyyy}")</td>
+                                        <td>@Html.DisplayFor(modelItem => m.Remarks)</td>
+                                        <td></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+
+</div><!-- /.page-content -->

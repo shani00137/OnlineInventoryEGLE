@@ -1,0 +1,444 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+
+
+<div class="infobox infobox-green infobox infobox-dark">
+
+    <div class="infobox-data">
+        <div class="infobox-content">Total Sale</div>
+        <div id="TotalSale" class="infobox-content"></div>
+    </div>
+</div>
+
+
+<div class="infobox infobox-blue infobox infobox-dark">
+
+    <div class="infobox-data">
+        <div class="infobox-content">Customers</div>
+        <div id="Customers" class="infobox-content"></div>
+    </div>
+</div>
+
+<div class="infobox infobox-orange infobox infobox-dark">
+
+    <div class="infobox-data">
+        <div class="infobox-content">Today Sale</div>
+        <div id="TodaySale" class="infobox-content">222.52</div>
+    </div>
+</div>
+
+<div onclick="LoadDebtorDetail()" class="infobox infobox-brown infobox infobox-dark">
+
+    <div class="infobox-data text-center">
+        <div class="infobox-content ">Total Debtor</div>
+        <div  id="TotalDebtor" class="infobox-content"></div>
+    </div>
+
+</div>
+
+
+
+
+<br />
+
+<!-- Grid container -->
+<div class="space-6"></div>
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+        <h5>
+            <i class="icon-signal"></i>
+            Sale Progress
+        </h5>
+        <div class="widget-toolbar no-border">
+            <button id="graphBtn" class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">
+                
+                <i class="icon-angle-down icon-on-right bigger-110"></i>
+            </button>
+
+            <ul class="dropdown-menu pull-right dropdown-125 dropdown-lighter dropdown-caret">
+                <li>
+                    <a onclick="Refresh()" href="#" class="blue">
+                        <i class="icon-caret-right bigger-110">&nbsp;</i>
+                        This Week
+                    </a>
+                </li>
+
+
+
+                <li>
+                    <a onclick="getMonthlySale()" href="#">
+                        <i class="icon-caret-right bigger-110 invisible">&nbsp;</i>
+                        This Month
+                    </a>
+                </li>
+                <li>
+                    <a onclick="getYearSale()" href="#">
+                        <i class="icon-caret-right bigger-110 invisible">&nbsp;</i>
+                        This Year
+                    </a>
+                </li>
+                
+
+            </ul>
+        </div>
+    </div>
+  <div class="widget-body">
+      <canvas id="myChart" width="400" height="100"></canvas>
+  </div>
+  <div class="panel-footer text-right">
+      <button onclick="Refresh()" class="btn btn-default btn-success">
+          <i class="icon-refresh"></i>
+          Refresh
+      </button>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+        $("#graphBtn").text("This Week")
+    });
+    const ctx = document.getElementById('myChart').getContext('2d');
+    $.ajax({
+        type: 'GET',
+        url: "/Inventory/GetDashboardSaleChart",
+        datatype: JSON,
+        data: {},
+        success: function (data) {
+
+            var dataList = data;
+            var lablelist = [];
+            var amountlist = [];
+            for (let i = 0; i < dataList.length; i++) {
+                amountlist.push(dataList[i].Amount);
+                lablelist.push(dataList[i].InvoiceDate);
+            }
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: lablelist,
+                    datasets: [{
+                        label: '# of Votes',
+                        data: amountlist,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    //load top figure of dashboard
+    $.ajax({
+        type: 'GET',
+        url: "/Inventory/GetDashboardTopFigures",
+        datatype: JSON,
+        data: {},
+        success: function (data) {
+            debugger;
+            $('#Customers').text('');
+
+            var Customer = data[0].Customers;
+            var TotalSale = data[0].TotalSale;
+            var TodaySale = data[0].TodaySale;
+            var TotalDebtor = data[0].TotalDebtor;
+            $('#Customers').text(Customer);
+            $('#TotalSale').text(TotalSale);
+            $('#TodaySale').text(TodaySale);
+            $('#TotalDebtor').text(TotalDebtor)
+        }
+    });
+
+    function Refresh()
+    {
+        $("#graphBtn").text("This Week")
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/GetDashboardSaleChart",
+            datatype: JSON,
+            data: {},
+            success: function (data) {
+
+                var dataList = data;
+                var lablelist = [];
+                var amountlist = [];
+                for (let i = 0; i < dataList.length; i++) {
+                    amountlist.push(dataList[i].Amount);
+                    lablelist.push(dataList[i].InvoiceDate);
+                }
+                const myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: lablelist,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: amountlist,
+                               backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                        ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function getMonthlySale()
+    {
+        $("#graphBtn").text("This Month")
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/GetDashboardMonthlySaleChart",
+            datatype: JSON,
+            data: {},
+            success: function (data) {
+
+                var dataList = data;
+                var lablelist = [];
+                var amountlist = [];
+                for (let i = 0; i < dataList.length; i++) {
+                    amountlist.push(dataList[i].Amount);
+                    lablelist.push(dataList[i].InvoiceDate);
+                }
+                const myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: lablelist,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: amountlist,
+                              backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                        ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function getYearSale()
+    {
+        $("#graphBtn").text("This Year")
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/GetDashboardYearSaleChart",
+            datatype: JSON,
+            data: {},
+            success: function (data) {
+
+                var dataList = data;
+                var lablelist = [];
+                var amountlist = [];
+                for (let i = 0; i < dataList.length; i++) {
+                    amountlist.push(dataList[i].Amount);
+                    lablelist.push(dataList[i].InvoiceDate);
+                }
+                const myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: lablelist,
+                        datasets: [{
+                            label: '# of Votes',
+                            data: amountlist,
+                             backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                        ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function LoadDebtorDetail() {
+
+        var url = "@Url.Action("CustomerBalances", "Sales")";
+        window.location = url;
+    }
+
+</script>
+<!-- Grid container -->

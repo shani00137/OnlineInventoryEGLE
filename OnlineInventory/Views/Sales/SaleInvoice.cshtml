@@ -1,0 +1,593 @@
+﻿
+@{
+    ViewBag.Title = "SaleInvoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript">
+        var cartList = [];
+    $(document).ready(function () {
+        var now = new Date();
+        var day = ("0" + now.getDate()).slice(-2);
+        var month = ("0" + (now.getMonth() + 1)).slice(-2);
+        var today = now.getFullYear() + "-" + (month) + "-" + (day);
+        $('#InvoiceDate').val(today);
+        $("#printBtn").prop("disabled", true);
+
+    });
+    //load customer list
+    $(function () {
+        var ddlCustomers = $("#ddlCustomers");
+        ddlCustomers.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+        var ddlItemList = $("#ddlItemList");
+
+        $("#progressBar").hide();
+        ddlItemList.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+
+        $.ajax({
+            type: "Get",
+            url: "/Inventory/LoadGridCustomer",
+            data: { customerId: 0 },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (response) {
+                ddlCustomers.empty().append('<option selected="selected" value="0">Please select Customer</option>');
+                $.each(response, function () {
+                    ddlCustomers.append($("<option></option>").val(this['CustomerId']).html(this['Name']));
+                });
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+        EditInvoice("@ViewBag.Inv");
+    });
+    function EditInvoice(InvoiceNo) {
+
+        $.ajax({
+            type: 'GET',
+            url: "/Sales/GetInvoiceByNo",
+            datatype: JSON,
+            data: { InvoiceNo: InvoiceNo },
+            success: function (data) {
+                debugger;
+                if (data.length > 0) {
+                    $("#ddlCustomers").val(data[0].CustomerId);
+                var now = new Date(parseInt(data[0].InvoiceDate.substr(6)));
+                 var day = ("0" + now.getDate()).slice(-2);
+                var month = ("0" + (now.getMonth() + 1)).slice(-2);
+                var today = now.getFullYear() + "-" + (month) + "-" + (day);
+                $('#InvoiceDate').val(today);
+               // $("#InvoiceDate").val(date.getFullYear() + "-" + (month.toString().length > 1 ? month : "0" + month) + "-" + date.getDate());
+                $("#InvoiceNo").val(data[0].InvoiceNo);
+                getCustomerItems(data[0].CustomerId)
+                $('#cartTable tbody').empty();
+                var count = 1;
+                var TotalAmount = 0;
+                $.each(data, function (i, item) {
+
+                    var add1 = new add(item.Quantity, item.Rate, item.Amount, item.ItemName, item.ItemId);
+                    cartList[cartList.length] = add1;
+                    console.log(cartList);
+                    LoadGrid();
+                    TotalAmount += parseFloat(item.Amount);
+                    count++;
+                });
+                $('#TotalAmount').val(TotalAmount);
+                }
+
+            },
+            error: function (data) { }
+        });
+    }
+    function ConvertJsonDateToDateTime(date) {
+                var parsedDate = new Date(parseInt(date.substr(6)));
+                var newDate = new Date(parsedDate);
+                var month = ('0' + (newDate.getMonth() + 1)).slice(-2);
+                var day = ('0' + newDate.getDate()).slice(-2);
+                var year = newDate.getFullYear();
+                return day + "/" + month + "/" + year;
+            }
+    // add to Cart List
+
+
+
+
+    function selectedCustomerChangeEvent(sel) {
+       
+        $('#cartTable tbody').empty();
+        cartList = [];
+
+        getCustomerItems(sel.value);
+    }
+
+    //getSelected Customer Items
+    function getCustomerItems(customerId) {
+        var ddlItemList = $("#ddlItemList");
+        ddlItemList.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/LoadItemsByCustomer",
+            datatype: JSON,
+            data: { customerId: customerId },
+            success: function (response) {
+                ddlItemList.empty().append('<option selected="selected" value="0">Please select</option>');
+                $.each(response, function () {
+                    ddlItemList.append($("<option></option>").val(this['ItemId']).html(this['ItemName'] +'      (Item Code-'+ this['ItemCode']+')') );
+                });
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+    }
+
+    //ChangeItemEvent
+    function ChangeItemEvent(item) {
+        debugger;
+        $('#Quanity').empty();
+        $('#Rate').empty();
+        $('#Amount').empty();
+
+        $('#Quantity').val(1);
+        $('#Rate').val(0);
+        $('#Amount').val(0);
+        $('#Rate').focusin();
+
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/LoadGridItemByID",
+            datatype: JSON,
+            data: { ItemID: item.value },
+            success: function (data) {
+                debugger;
+                $("#Rate").val(data[0].SaleRate);
+                $("#Amount").val(data[0].SaleRate);
+                $('#Quantity').focus().select();
+                //$("#btnSave").text('Update');
+            },
+            error: function (data) { }
+        });
+
+
+    }
+
+    //change Change Rate Event
+    function RateChangeEvent(val) {
+        debugger;
+        var Rate = val.value;
+        var Quantity = $('#Quantity').val();
+        if (Rate > 0 && Quantity>0) {
+
+            var TotalAmount = Quantity * Rate;
+            $('#Amount').val(TotalAmount);
+        }
+    }
+
+    //change Change Quanity Event
+    function QuantityChangeEvent(val) {
+        debugger;
+        var Quantity = val.value;
+        var Rate = $('#Rate').val();
+        if (Quantity > 0 && Rate>0) {
+
+            var TotalAmount = Quantity * Rate;
+            $('#Amount').val(TotalAmount);
+
+        }
+    }
+
+    // add to Cart List
+    function addToCart()
+    {
+        debugger;
+        var ItemName = $('#ddlItemList').find('option:selected').text();
+        var ItemId = $("#ddlItemList").val();
+        var Quantity = $('#Quantity').val();
+        var Rate = $('#Rate').val();
+        var Amount = $('#Amount').val();
+        if (Amount > 0) {
+            var add1 = new add(Quantity, Rate, Amount, ItemName, ItemId);
+            cartList[cartList.length] = add1;
+            console.log(cartList);
+            LoadGrid();
+            $('#ddlItemList').val(0);
+            $('#ddlItemList').focus().select();
+
+            $('#Quantity').val(0);
+            $('#Rate').val(0);
+            $('#Amount').val(0);
+            sessionStorage.setItem('myArray', JSON.stringify(cartList));
+        }
+        else {
+
+        }
+    }
+
+    function add(Quantity, Rate, Amount, ItemName, ItemId) {
+        this.Quantity = Quantity;
+        this.Rate = Rate;
+        this.Amount = Amount;
+        this.ItemName = ItemName;
+        this.ItemId = ItemId;
+
+    }
+    //Load Grid
+    function LoadGrid() {
+
+        $('#cartTable tbody').empty();
+        var TotalAmount = 0;
+        for (let i = 0; i < cartList.length; i++) {
+
+            var obj = cartList[i];
+            debugger;
+            var Count = i + 1;
+            var rows = "<tr>"
+                + "<td class='hidden-480' >" + Count + "</td>"
+                + "<td class='hidden-480'>" + obj.ItemId + "</td>"
+                + "<td >" + obj.ItemName + "</td>"
+                + "<td>" + obj.Quantity + "</td>"
+                + "<td>" + obj.Rate + "</td>"
+                + "<td>" + obj.Amount + "</td>"
+                + "<td>" + "<button onclick='DeleteCartItem(" + i + ");' class='btn btn-xs btn-danger'><i class='icon-trash bigger-120'></i></button>"+"</td>"
+                + "</tr>";
+            $('#cartTable tbody').append(rows);
+            TotalAmount += parseFloat( obj.Amount);
+
+        }
+        $('#TotalAmount').val(TotalAmount);
+
+    }
+    //Delete Item
+    function DeleteCartItem (val)
+    {
+        if (confirm('Are you sure to delete')) {
+            debugger;
+            cartList.splice(val, 1);
+            LoadGrid();
+
+        }
+
+    }
+
+    function func_validate() {
+
+        var chk = 0;
+
+        var CustomerID = document.getElementById('ddlCustomers');
+        if (CustomerID.value == 0) {
+            CustomerID.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            CustomerID.style.border = "1px solid #ccc";
+            
+        }
+        if (cartList.length = 0)
+        {
+            alert();
+            chk = 1;
+        }
+        //------------------ finally ------------------------------
+        if (chk != 0)
+            return false;
+        else
+            return true;
+    }
+
+    //Save Invoice
+    function saveInvoice()
+    {
+         var newCartList = JSON.parse(sessionStorage.getItem('myArray'));
+  
+        if (func_validate() == false) {
+            return;
+        }
+            
+        debugger;
+        var InvoiceDate= $("#InvoiceDate").val();
+        var TotalAmount = $('#TotalAmount').val();
+        if (TotalAmount > 0 && InvoiceDate != null && InvoiceDate != "") {
+            $("#saveBtn").prop("disabled", true);
+            $("#progressBar").show();
+            $.ajax(
+                {
+                    type: "POST", //HTTP POST Method
+                    url: "/Sales/SaveSaleInvoice", // Controller/View
+                    data: { //Passing data
+                        CustomerId: $('#ddlCustomers').val(),
+                        InvoiceDate: $("#InvoiceDate").val(),
+                        CartList: newCartList,
+                        InvoiceNo: $("#InvoiceNo").val()
+
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            debugger;
+                            //oTable = $('#tblSession').DataTable();
+                            //oTable.draw();
+                            $("#InvoiceNo").val(data.Caseid)
+
+                            $("#progressBar").hide();
+                            // $("#saveBtn").prop("disabled", false);
+                            AlertNotification();
+                            $("#printBtn").prop("disabled", false);
+
+                        } else {
+                            alert(data.responseText);
+                        }
+                    }
+                });
+        }
+        else { AlertError()}
+    }
+    //reset INvoice
+    function resetInoice() {
+        $('#cartTable tbody').empty();
+        $("#saveBtn").prop("disabled", false);
+        $("#ddlCustomers").val('0');
+        cartList = [];
+        $("#InvoiceNo").val("")
+    }
+    function AlertNotification() {
+        $("#succesfulAlert").show();;
+        $("#succesfulAlert").fadeTo(2000, 500).slideUp(500, function () {
+            $("#success-alert").slideUp(500);
+        });
+    }
+    function AlertError() {
+
+        $("#errorAlert").show();;
+        $("#errorAlert").fadeTo(2000, 500).slideUp(500, function () {
+            $("#success-alert").slideUp(500);
+        });
+    }
+
+    function downloadInvoice() {
+        var InfoiceNo = $("#InvoiceNo").val();
+
+        var url = "@Url.Action("ExportInvoiceReport", "Reports")";
+        var InvoiceNo = $("#InvoiceNo").val();
+        window.open(url + "?InvoiceNo=" + InvoiceNo, '_blank');
+
+        $.ajax({
+            type: 'GET',
+            url: "/Reports/ExportInvoiceReport",
+            datatype: JSON,
+            data: { InvoiceNo: InfoiceNo },
+            success: function (data) {
+                debugger;
+                var response = JSON.parse(data);
+                window.location = '/Report/Download?fileGuid=' + response.FileGuid
+                    + '&filename=' + response.FileName;
+            },
+            error: function (data) { }
+        });
+
+
+    }
+    //getSelected Customer Items
+
+</script>
+<div class="row">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h5>Manage Invoice</h5>
+
+        </div>
+        <div class="panel-body">
+            <div id="succesfulAlert" hidden="hidden" class="alert alert-block alert-success">
+                <button type="button" class="close" data-dismiss="alert">
+                    <i class="icon-remove"></i>
+                </button>
+                <p>
+                    <strong>
+                        <i class="icon-ok"></i>
+                        Response!
+                    </strong>
+                    Save Sucessfuly...;
+                </p>
+
+            </div>
+            <div id="errorAlert" hidden="hidden" class="alert alert-block alert-danger">
+                <button type="button" class="close" data-dismiss="alert">
+                    <i class="icon-remove"></i>
+                </button>
+                <p>
+                    <strong>
+                        <i class="icon-ok"></i>
+                        Attension
+                    </strong>
+                    Date and Product are requried.!
+                </p>
+
+            </div>
+            <div class="col-md-12">
+                <div class="col-md-4">
+                    <div class="form-group col-sm-12">
+
+                        <label class="col-sm-12 control-label no-padding-right" for="form-field-1">To Customer </label>
+                        <select class="form-control col-sm-12 select2" id="ddlCustomers" onchange="selectedCustomerChangeEvent(this);"></select>
+
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+
+                <div class="col-md-2">
+                    <div class="form-group col-sm-12">
+                        <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Invoice Date </label>
+                        <input type="date" id="InvoiceDate" placeholder="Invoice Date" class="form-control hasDatepicker col-md-12">
+
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <div class="form-group col-sm-12">
+                        <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Invoice </label>
+                        <input disabled type="text" id="InvoiceNo" placeholder="Invoice No" class="form-control">
+
+                    </div>
+                </div>
+
+                <div class="=row">
+                    <div class="col-md-4 col-sm-12">
+                        <div class="form-group col-sm-12">
+                            <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Choose Product </label>
+                            <select class="form-control" id="ddlItemList" onchange="ChangeItemEvent(this);"></select>
+
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-12">
+                        <div class="form-group col-sm-12">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Quanity </label>
+                            <input type="number" onchange="QuantityChangeEvent(this);" id="Quantity" placeholder="Quanity" class="form-control col-sm-12">
+
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-12 col-sm-12">
+                        <div class="form-group col-sm-12">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Rate </label>
+                            <input type="number" onchange="RateChangeEvent(this);" id="Rate" placeholder="Rate" class="form-control col-sm-12">
+
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group col-sm-12">
+                            <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Amount </label>
+
+                            <input disabled type="number" id="Amount" placeholder="Amount" class="form-control col-sm-12 ">
+
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group col-sm-12">
+                            <label style="color:white" class="col-sm-3 control-label no-padding-right" for="form-field-1">Amount </label>
+                            <button onclick="addToCart();" class="btn btn-info btn-block">Add</button>
+
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <hr />
+                <div class="col-md-12">
+                    <table id="cartTable" class="table  table-bordered table-hover">
+                        <thead>
+                            <tr>
+
+                                <th class="hidden-480">Sr No</th>
+                                <th class='hidden-480'>Item No</th>
+                                <th>Item Details</th>
+                                <th>Quantity</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <hr />
+                <br />
+                <div class="col-md-12 text-right">
+                    <fieldset>
+                        <strong>Total Amount</strong>
+                        <input disabled id="TotalAmount" type="number" placeholder="0…">
+                    </fieldset>
+                </div>
+
+                <br />
+                <br />
+                <br />
+                <br />
+                <hr />
+
+            </div>
+
+        </div>
+
+
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-md-2">
+                    <button onclick="resetInoice();" class="btn btn-warning btn-block">
+
+                        Reset
+                    </button>
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-2">
+                    <button id="saveBtn" onclick="saveInvoice()" class="btn btn-danger btn-block">
+                        <i id="progressBar" hidden="true" class="icon-spinner icon-spin  bigger-125"></i>
+                        Submit
+                    </button>
+                </div>
+                <div class="col-md-2">
+
+                    <button id="printBtn" onclick="downloadInvoice();" class="btn btn-success btn-block">
+
+                        Print
+                    </button>
+                    @*//<button onclick="@Url.Action("Reports", "ExportInvoiceReport", new { })" class="btn btn-success btn-block">Print</button>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

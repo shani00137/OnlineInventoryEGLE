@@ -1,0 +1,167 @@
+﻿@model IEnumerable<OnlineInventory.Models.InvoiceInfoMD>
+@{
+    ViewBag.Title = "CustomerBalances";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script>
+    function show() {
+        document.getElementById("spinner").classList.add("show");
+    }
+    function hide() {
+        document.getElementById("spinner").classList.remove("show");
+    }
+    $(function () {
+        $.ajax({
+            type: "Get",
+            url: "/Sales/GetCustomerBalances",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                debugger;
+                $('#invoiceTable tbody').empty();
+                var count = 0;
+                $.each(data, function (i, item) {
+                    count = count + 1;
+                    var customerId = item.CustomerId;
+                    var rows = "<tr>"
+                        + "<td >" + item.Name + "</td>"
+                        + "<td>" + item.TotalAmount + "</td>"
+                        //+ "<td>" + "<button onclick='Edit(" + item.CustomerId + ");' class='btn btn-xs btn-info'><i class='icon-pencil bigger-120'></i></button>  " + "</td>"
+                        + "<td>" + "<button data-toggle='modal' data-target='#exampleModal' onclick='viewDetail(" + customerId + ");' class='btn btn-xs btn-info'><i class='icon- icon-book bigger-120'></i></button> " + "</td>"
+                        + "</tr>";
+                    $('#invoiceTable tbody').append(rows);
+                });
+                hide();
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
+            }
+        });
+    });
+    function viewDetail(val) {
+        show();
+        $.ajax({
+            type: 'POST',
+            url: "/Accounts/ExportGeneralLedgerAllViewer",
+            datatype: JSON,
+            data: { CustomerID: val},
+
+            success: function (data) {
+                debugger;
+                $('#tblData tbody').empty();
+              
+                var balance = data[0].OpeningBalance;
+                $.each(data, function (i, item) {
+                    var currentBalance = item.Debit - item.Credit;
+                    balance += currentBalance;
+
+                    var rows = "<tr>"
+                        + "<td >" + item.InvoiceNo + "</td>"
+                        + "<td>" + ConvertJsonDateToDateTime(item.CreatedDate) + "</td>"
+                        + "<td>" + item.Debit + "</td>"
+                        + "<td>" + item.Credit + "</td>"
+                        + "<td>" + balance + "</td>"
+
+                        + "</tr>";
+                    $('#tblData tbody').append(rows);
+                });
+            }
+
+        });
+        hide();
+    }
+     function ConvertJsonDateToDateTime(date) {
+                var parsedDate = new Date(parseInt(date.substr(6)));
+                var newDate = new Date(parsedDate);
+                var month = ('0' + (newDate.getMonth() + 1)).slice(-2);
+                var day = ('0' + newDate.getDate()).slice(-2);
+                var year = newDate.getFullYear();
+                return day + "/" + month + "/" + year;
+            }
+</script>
+<div class="page-content">
+    <div id="spinner">
+        @*<img src="~/Content/spiner.gif" />*@
+        <i class="icon-spinner icon-spin orange bigger-300"></i>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            Customer Balances
+                        </div>
+                        <div class="panel-body">
+                            <table id="invoiceTable" class="table  table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="detail-col">Customer</th>
+                                        <th class="detail-col hidden-480">Total Amount</th>
+                                        <th class="detail-col">Action</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @*@foreach (var m in Model)
+                                        {
+                                            <tr>
+                                                <td>@Html.DisplayFor(modelItem => m.Name)</td>
+                                                <td>@Html.DisplayFor(modelItem => m.TotalAmount)</td>
+                                                <td></td>
+                                            </tr>
+                                        }*@
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+            <!-- PAGE CONTENT ENDS -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+
+</div><!-- /.page-content -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Customer Ledger</h5>
+
+            </div>
+            <div class="modal-body">
+                <table id="tblData" class="table  table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th class="detail-col">Reference</th>
+                            <th class="detail-col">Date</th>
+
+                            <th class="detail-col">Debit</th>
+                            <th class="detail-col">Credit</th>
+                            <th class="detail-col"> Balance </th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @*@foreach (var m in Model)
+                {
+                    <tr>
+                        <td>@Html.DisplayFor(modelItem => m.ItemId)</td>
+                        <td>@Html.DisplayFor(modelItem => m.ItemName)</td>
+                        <td><a class='btn btn-info' onclick='Edit(@Html.DisplayFor(modelItem => m.ItemId))'><em class='fa fa-pencil'></em></a> </td>
+                    </tr>
+                }*@
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>

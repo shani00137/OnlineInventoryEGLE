@@ -1,0 +1,232 @@
+﻿@model OnlineInventory.Models.ItemsMD
+@{
+    ViewBag.Title = "AddItems";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript" charset="utf8">
+
+
+    function func_validate() {
+        var chk = 0;
+        debugger;
+        var ItemName = document.getElementById('ItemName');
+        var SaleRate = document.getElementById('SaleRate');
+        var CustomerId = document.getElementById('CustomerId');
+        var ItemCode = document.getElementById('ItemCode');
+       
+
+        if (ItemName.value == "" || SaleRate.value == "" || CustomerId.value == "" || ItemCode.value == "") {
+            ItemName.style.border = "2px solid red";
+            SaleRate.style.border = "2px solid red";
+            CustomerId.style.border = "2px solid red";
+            ItemCode.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            ItemName.style.border = "1px solid #ccc";
+            SaleRate.style.border = "1px solid #ccc";
+            CustomerId.style.border = "1px solid #ccc";
+            ItemCode.style.border = "1px solid #ccc"
+        }
+        //------------------ finally ------------------------------
+        if (chk != 0)
+            return false;
+        else
+            return true;
+    }
+
+    function SaveItems() {
+        if (func_validate() == false) {
+            return;
+        }
+        $.ajax(
+            {
+                type: "POST", //HTTP POST Method
+                url: "/Inventory/AddEditSessions", // Controller/View
+                data: { //Passing data
+                    ItemId: $("#ItemId").val(),
+                    ItemName: $("#ItemName").val(),
+                    CustomerId: $("#CustomerId").val(),
+                    SaleRate: $("#SaleRate").val(),
+                    ItemCode: $("#ItemCode").val(),
+                },
+                success: function (data) {
+                    if (data.success) {
+                        $("#ItemName").val('');
+                        $("#ItemId").val('0');
+                        $("#SaleRate").val('0');
+                        $("#ItemCode").val('');
+                        AlertNotification();
+                        //oTable = $('#tblSession').DataTable();
+                        //oTable.draw();
+                        LoadGrid();
+                        //alert(data.responseText);
+                        ClearAll();
+
+                    } else {
+                        alert(data.responseText);
+                    }
+                }
+            });
+    }
+    function exportReport()
+    {
+        
+        var url = "@Url.Action("ExportItemReportsByCustomer", "Reports")";
+        var InvoiceNo = $("#CustomerId").val();
+        if (InvoiceNo != "" || InvoiceNo == null)
+        {
+            window.open(url + "?CustomerId=" + InvoiceNo , '_blank');
+        }
+        else
+        {
+            alert('Please select Customers')
+        }
+        
+       
+    }
+    function Edit(ItemID) {
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/LoadGridItemByID",
+            datatype: JSON,
+            data: { ItemID: ItemID },
+            success: function (data) {
+                $("#ItemId").val(data[0].ItemId),
+                    $("#ItemName").val(data[0].ItemName);
+                $("#SaleRate").val(data[0].SaleRate);
+                $("#ItemCode").val(data[0].ItemCode);
+
+                //AlertNotification();
+                //$("#btnSave").text('Update');
+            },
+            error: function (data) { }
+        });
+    }
+    function LoadGrid() {
+        $.ajax({
+            type: 'GET',
+            url: "/Inventory/LoadGridItems",
+            datatype: JSON,
+            data: { CustomerId: $("#CustomerId").val() },
+            success: function (data) {
+                $('#tblItems tbody').empty();
+                var count = 0;
+                $.each(data, function (i, item) {
+                    count = count + 1;
+                    var rows = "<tr>"
+                        + "<td >" + item.ItemId + "</td>"
+                        + "<td>" + item.ItemCode + "</td>"
+                        + "<td>" + item.ItemName + "</td>"
+                        + "<td>" + item.SaleRate + "</td>"
+
+                        + "<td>" + "<button onclick='Edit(" + item.ItemId + ");' class='btn btn-xs btn-info'><i class='icon-edit bigger-120'></i></button>" + "</td>"
+                        //+ "<td>"
+                        //+ "< class='btn btn-info'  onclick='Edit(" + item.ItemId + ");'><em class='fa fa-pencil'></em></a> "
+                        //+ "</td>"
+                        + "</tr>";
+                    $('#tblItems tbody').append(rows);
+                });
+            }
+        });
+    }
+    function AlertNotification() {
+        $("#succesfulAlert").show();;
+        $("#succesfulAlert").fadeTo(2000, 500).slideUp(500, function () {
+            $("#success-alert").slideUp(500);
+        });
+    }
+
+</script>
+<div class="panel-info">
+    <div class="panel-heading">
+        <h6>Manage Items</h6>
+    </div>
+    <div class="panel-body">
+        <div id="succesfulAlert" hidden="hidden" class="alert alert-block alert-success">
+            <button type="button" class="close" data-dismiss="alert">
+                <i class="icon-remove"></i>
+            </button>
+
+            <p>
+                <strong>
+                    <i class="icon-ok"></i>
+                    Response!
+                </strong>
+                Save Sucessfuly...;
+            </p>
+
+
+        </div>
+        @Html.Hidden("ItemId", "0")
+        <label id="msg"></label>
+      
+        <div class="col-lg-12">
+            <div class="form-group col-lg-6 col-sm-12">
+                <label>Customer <span style="color:red;">*</span> </label>
+                @Html.DropDownListFor(m => m.CustomerId, ViewBag.CustomerData as SelectList, "--Select--", new { @class = "form-control col-sm-12", required = "required", @onchange = "LoadGrid()" })
+            </div>
+            <div class="col-md-6">
+                <div class="form-group col-sm-12">
+                    <strong>Item Code</strong>
+                    <input type="text" id="ItemCode" class="form-control col-sm-12" placeholder="Item Code" />
+                </div>
+            </div>
+        </div>
+       
+
+        <div class="=row">
+            <div class="col-md-6">
+                <div class="form-group col-sm-12">
+                    <strong>Item Name</strong>
+                    <input type="text" id="ItemName" class="form-control col-sm-12" placeholder="Item Name" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group col-sm-12">
+                    <strong>Sale Rate</strong>
+                    <input type="number" min="0" id="SaleRate" class="form-control col-sm-12" placeholder="Sale Rate" />
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="panel-footer text-right">
+
+        <button type="button" class="btn btn-info btn-warning text-left" onclick="exportReport();">
+            <i class="ace-icon fa fa-file bigger-110"></i>Export Report
+        </button>
+                <button type="button" class="btn btn-info btn-default text-right" onclick="SaveItems();">
+                    <i class="ace-icon fa fa-key bigger-110"></i>Save Item
+                </button>
+          
+    </div>
+</div>
+<br />
+
+<table id="tblItems" class="table  table-bordered table-hover">
+    <thead>
+        <tr>
+            <th class="detail-col">Item No.</th>
+            <th class="detail-col">Item Code</th>
+            <th class="detail-col">Item Details</th>
+            <th class="detail-col">Sale Rate</th>
+            <th class="detail-col">Action</th>
+
+        </tr>
+    </thead>
+
+    <tbody>
+        @*@foreach (var m in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => m.ItemId)</td>
+                    <td>@Html.DisplayFor(modelItem => m.ItemName)</td>
+                    <td><a class='btn btn-info' onclick='Edit(@Html.DisplayFor(modelItem => m.ItemId))'><em class='fa fa-pencil'></em></a> </td>
+                </tr>
+            }*@
+    </tbody>
+</table>
+

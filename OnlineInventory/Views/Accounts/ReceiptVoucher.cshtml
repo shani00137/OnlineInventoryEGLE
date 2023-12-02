@@ -1,0 +1,271 @@
+﻿@model OnlineInventory.Models.ReceiptVoucherMD
+@{
+    ViewBag.Title = "ReceiptVoucher";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script type="text/javascript" charset="utf8">
+
+    $(document).ready(function () {
+ 
+        $("#VoucherDate").datepicker();
+    });
+   
+    function func_validate() {
+
+        var chk = 0;
+
+        var CustomerID = document.getElementById('CustomerID');
+        var VoucherDate = document.getElementById('VoucherDate');
+        if (CustomerID.value == "") {
+            CustomerID.style.border = "2px solid red";
+            VoucherDate.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            CustomerID.style.border = "1px solid #ccc";
+            VoucherDate.style.border = "1px solid #ccc";
+        }
+
+        var AmountReceived = document.getElementById('AmountReceived');
+        if (AmountReceived.value == "") {
+            AmountReceived.style.border = "2px solid red";
+            chk = 1;
+        }
+        else {
+            AmountReceived.style.border = "1px solid #ccc";
+        }
+        //------------------ finally ------------------------------
+        if (chk != 0)
+            return false;
+        else
+            return true;
+    }
+
+    function SaveVoucher() {
+        if (func_validate() == false) {
+            return;
+        }
+      
+        $.ajax(
+            {
+                type: "POST", //HTTP POST Method
+                url: "/Accounts/AddEditReceiptVoucher", // Controller/View
+                data: { //Passing data
+                    VoucherID: $("#VoucherID").val(),
+                    VoucherNo: $("#VoucherNo").val(),
+                    VoucherDate: $("#VoucherDate").val(),
+                    CustomerID: $("#CustomerID").val(),
+                    AmountReceived: $("#AmountReceived").val(),
+                    Remarks: $("#Remarks").val(),
+                },
+                success: function (data) {
+                    if (data.success) {
+                        $("#VoucherNo").val('');
+                        $("#VoucherDate").val('');
+                        //$("#CustomerId").val('0');
+                        $("#AmountReceived").val('');
+                        GenerateVoucher();
+                        $("#VoucherID").val('0');
+                        //oTable = $('#tblSession').DataTable();
+                        //oTable.draw();
+                        LoadGrid();
+                        alert(data.responseText);
+                        ClearAll();
+                    } else {
+                        alert(data.responseText);
+                    }
+                }
+            });
+    }
+
+
+    function GenerateVoucher() {
+        $.ajax({
+            type: 'POST',
+            url: "/Accounts/GetVoucherNo",
+            datatype: JSON,
+            data: {},
+            success: function (data) {
+                $("#VoucherNo").val(data.VoucherNo);
+                $("#VoucherDate").val(data.VoucherDate);
+            }
+        });
+    }
+
+    function LoadGrid() {
+        $.ajax({
+            type: 'GET',
+            url: "/Accounts/LoadReceiptVouchers",
+            datatype: JSON,
+            data: {},
+            success: function (data) {
+                $('#tblVouchers tbody').empty();
+                var count = 0;
+                $.each(data, function (i, item) {
+                    count = count + 1;
+                    var rows = "<tr>"
+                        + "<td >" + item.VoucherID + "</td>"
+                        + "<td>" + item.VoucherNo + "</td>"
+                        + "<td>" + item.VoucherDate + "</td>"
+                        + "<td>" + item.CustName + "</td>"
+                        + "<td>" + item.AmountReceived + "</td>"
+                        + "<td>" + item.Remarks + "</td>"
+                        + "<td>" + "<button onclick='Edit(" + item.VoucherID + ");' class='btn btn-xs btn-info'><i class='icon-edit bigger-120'></i></button>" + "</td>"
+                        + "</tr>";
+                    $('#tblVouchers tbody').append(rows);
+                });
+            }
+        });
+    }
+
+    function Edit(VoucherID) {
+        $.ajax({
+            type: 'GET',
+            url: "/Accounts/LoadReceiptVoucherByID",
+            datatype: JSON,
+            data: { VoucherID: VoucherID },
+            success: function (data) {
+                $("#VoucherID").val(VoucherID),
+                $("#VoucherNo").val(data[0].VoucherNo);
+                $("#VoucherDate").val(data[0].VoucherDate);
+                $("#CustomerID").val(data[0].CustomerID);
+                $("#AmountReceived").val(data[0].AmountReceived);
+                $("#Remarks").val(data[0].Remarks);
+                //AlertNotification();
+                //$("#btnSave").text('Update');
+            },
+            error: function (data) { }
+        });
+    }
+
+</script>
+<div class="row">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h4>Receipt Voucher</h4>
+
+        </div>
+        @Html.Hidden("VoucherID", "0")
+    <div class="panel-body">
+
+        <div class="=row">
+
+            <div class="form-group col-md-6  col-sm-12">
+                <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Voucher No. </label>
+                @Html.TextBoxFor(m => m.VoucherNo, new { @class = "form-control col-sm-12", required = "required", @readonly = true })
+                @*<input disabled type="text" id="VoucherNo" placeholder="Invoice No" class="form-control">*@
+
+            </div>
+
+
+
+            <div class="form-group col-md-6 col-sm-12">
+                <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Voucher Date </label>
+
+                @Html.TextBoxFor(m => m.VoucherDate, "{0:d MMM yyyy}", new { id= "VoucherDate", @class = "form-control col-sm-12 datepicker", required = "required" })
+            </div>
+
+
+
+
+        </div>
+        <div class="=row">
+
+            <div class="form-group col-sm-12 col-md-6">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Amount</label>
+                <input type="number" onchange="RateChangeEvent(this);" id="AmountReceived" placeholder="Rate" class="form-control col-sm-12">
+
+            </div>
+
+
+            <div class="form-group col-sm-12 col-md-6">
+                <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Remarks </label>
+                <input type="text" id="Remarks" placeholder="remarks" class="form-control col-sm-12">
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12 col-sm-12">
+                <label class="col-sm-12 control-label no-padding-right" for="form-field-1">Customer </label>
+                @Html.DropDownListFor(m => m.CustomerID, ViewBag.CustomerData as SelectList, "--Select--", new { @class = "form-control col-sm-12 col-md-12", required = "required", @onchange = "LoadGrid()" })
+
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-md-8"></div>
+            <div class="col-md-2">
+                <button id="saveBtn" onclick="SaveVoucher();" class="btn btn-success btn-block">
+                    @*<i id="progressBar" class="icon-spinner icon-spin  bigger-125"></i>*@
+                    Submit
+                </button>
+            </div>
+            <div class="col-md-2">
+                <button onclick="resetInoice();" class="btn btn-warning btn-block">
+                    Reset
+                </button>
+            </div>
+            @*<div class="col-md-2">
+                <button class="btn btn-success btn-block">
+                    <i id="progressBar" class="icon-spinner icon-spin  bigger-125"></i>
+                    Print
+                </button>
+            </div>*@
+        </div>
+
+
+        <hr />
+        <div class="row">
+            <table id="tblVouchers" class="table  table-bordered table-hover">
+                <thead>
+                    <tr>
+
+                        <th>Sr No</th>
+                        <th>Voucher No.</th>
+                        <th>Voucher Date</th>
+                        <th>Customer</th>
+                        <th>Amount Received</th>
+                        <th>Remarks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody></tbody>
+            </table>
+        </div>
+
+
+        <br />
+
+
+
+
+    </div>
+
+
+        @*<div class="panel-footer">
+                <div class="row">
+                    <div class="col-md-2">
+                        <button onclick="resetInoice();" class="btn btn-warning btn-block">
+
+                            Reset
+                        </button>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-2">
+                        <button id="saveBtn" onclick="saveInvoice();" class="btn btn-danger btn-block">
+                            <i id="progressBar" class="icon-spinner icon-spin  bigger-125"></i>
+                            Submit
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-success btn-block">
+                            <i id="progressBar" class="icon-spinner icon-spin  bigger-125"></i>
+                            Print
+                        </button>
+                    </div>
+                </div>
+            </div>*@
+    </div>
+</div>

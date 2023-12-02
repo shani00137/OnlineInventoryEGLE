@@ -1,0 +1,69 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model OnlineInventory.Models.UserLoginModel
+<h2>Manage Products</h2>
+<hr />
+<div class="col-sm-12">
+ 
+
+     
+                    <div class="=row">
+                        <div class="col-md-2 text-right">
+                            <strong>Item Name</strong>
+                        </div>
+                        <div class="col-md-6 text-left">
+                            @Html.TextBoxFor(model => model.UserName, new { placeholder = "Item Name", @class = "form-control", })
+                        </div>
+                        <div class="col-md-4">
+
+                            <button type="button" class="btn btn-info btn-sm">
+                                <i class="ace-icon fa fa-key bigger-110"></i>Submit
+                            </button>
+                        </div>
+                    </div>
+
+                    
+
+
+ 
+
+</div>
+<br />
+<br />
+<table id="simple-table" class="table  table-bordered table-hover">
+    <thead>
+        <tr>
+            <th class="detail-col">Item No.</th>
+            <th class="detail-col">Item Details</th>
+           
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="center">
+                <p>1</p>
+            </td>
+            <td class="center">
+                <p>Product One</p>
+            </td>
+
+
+        </tr>
+        <tr>
+            <td class="center">
+                <p>2</p>
+            </td>
+            <td class="center">
+                <p>Product Tw0</p>
+            </td>
+
+
+        </tr>
+
+
+    </tbody>
+</table>
