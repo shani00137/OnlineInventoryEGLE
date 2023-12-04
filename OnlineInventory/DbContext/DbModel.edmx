@@ -113,6 +113,7 @@
           <Property Name="UserName" Type="nvarchar(max)" Nullable="false" />
           <Property Name="Password" Type="nvarchar(max)" Nullable="false" />
           <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="RoleName" Type="nvarchar(max)" />
         </EntityType>
         <EntityContainer Name="OnlineInvoiceSystemDBModelStoreContainer">
           <EntitySet Name="CustomerTbl" EntityType="Self.CustomerTbl" Schema="dbo" store:Type="Tables" />
@@ -264,6 +265,7 @@
           <Property Name="UserName" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Password" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="RoleName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
         </Schema>
     </edmx:ConceptualModels>
@@ -382,6 +384,7 @@
           <EntitySetMapping Name="UserLoginTbls">
             <EntityTypeMapping TypeName="OnlineInvoiceSystemDBModel.UserLoginTbl">
               <MappingFragment StoreEntitySet="UserLoginTbl">
+                <ScalarProperty Name="RoleName" ColumnName="RoleName" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="UserName" ColumnName="UserName" />

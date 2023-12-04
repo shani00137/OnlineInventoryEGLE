@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 
 namespace OnlineInventory.Controllers
 {
@@ -32,8 +33,11 @@ namespace OnlineInventory.Controllers
                     var Query = db.UserLoginTbls.Where(x => x.UserName == UserName && x.Password == EncryptPassword).FirstOrDefault();
                     if (Query != null)
                     {
-                        Session["LoginId"] = Query.LoginId;
-                        Session["UserName"] = Query.UserName;
+                        // User.Identity.Name.Split('|')[1]; = Query.LoginId;
+                        //Session["UserName"] = Query.UserName;
+                        Session["UserNo"] = Query.LoginId;
+                        FormsAuthentication.SetAuthCookie(Query.RoleName + "|" + Query.LoginId+ "|" + Query.UserName, true);
+                        TempData["RoleName"] = Query.RoleName;
                         return RedirectToAction("Index", "Home");
                     }
                     else

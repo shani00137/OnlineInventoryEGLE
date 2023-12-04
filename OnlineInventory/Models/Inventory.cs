@@ -13,10 +13,10 @@ namespace OnlineInventory.Models
     {
         public int ItemId { get; set; }
         public string ItemName { get; set; }
-        public double SaleRate { get;  set; }
-        public int? CustomerId { get;  set; }
+        public double SaleRate { get; set; }
+        public int? CustomerId { get; set; }
         public string ItemCode { get; set; }
-        
+
 
     }
 
@@ -38,17 +38,17 @@ namespace OnlineInventory.Models
         public double SaleRate { get; set; }
     }
 
-    public class InvoiceInfoMD
+    public class InvoiceInfoMD: PageModel
     {
         public String ReturnInvoiceNo { get; set; }
         public String InvoiceNo { get; set; }
-        
+
         public System.DateTime InvoiceDate { get; set; }
         public int CustomerId { get; set; }
         public string Remarks { get; set; }
-        public string Name { get;  set; }
-        public string CreatedBy { get;  set; }
-        public DateTime? CreatedDate { get;  set; }
+        public string Name { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
 
         public int ItemId { get; set; }
         public double Quantity { get; set; }
@@ -56,6 +56,8 @@ namespace OnlineInventory.Models
         public double Amount { get; set; }
         public double TotalAmount { get; set; }
         public string ItemName { get; set; }
+        public List<InvoiceInfoMD> InvoiceList { get; set; }
+        public  List<CustomerMD> CustomerList { get; set; }
     }
 
     public class InvoiceDetailMD
@@ -66,8 +68,8 @@ namespace OnlineInventory.Models
         public double Quantity { get; set; }
         public double Rate { get; set; }
         public double Amount { get; set; }
-        public string ItemName { get;  set; }
-        public string ItemCode { get;  set; }
+        public string ItemName { get; set; }
+        public string ItemCode { get; set; }
     }
 
     public class JournalEntries
@@ -79,5 +81,12 @@ namespace OnlineInventory.Models
         public double Debit { get; set; }
         public double Credit { get; set; }
         public string Remarks { get; set; }
+    }
+    public class PageModel
+    {
+        public int CurrentPage { get; set; }
+        public int PageSize { get; set; }
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
     }
 }

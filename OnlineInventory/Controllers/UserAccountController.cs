@@ -32,14 +32,14 @@ namespace OnlineInventory.Controllers
         [HttpGet]
         public ActionResult GetLoginUserId()
         {
-            if (Session["LoginId"] == null)
+            if (!User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Login");
             }
             else
             {
-                int LoginId = int.Parse(Session["LoginId"].ToString()); ;
-                String UserName = Session["UserName"].ToString(); ;
+                int LoginId = int.Parse(User.Identity.Name.Split('|')[1]); ;
+                String UserName = User.Identity.Name.Split('|')[2];
                 List<UserLoginModel> list = new List<UserLoginModel>();
                 list.Add(new UserLoginModel
                 {

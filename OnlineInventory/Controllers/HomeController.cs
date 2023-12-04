@@ -10,13 +10,14 @@ namespace OnlineInventory.Controllers
     {
         public ActionResult Index()
         {
-            if (Session["LoginId"] == null)
+            if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Login");
+                return View();
+                
             }
             else
             {
-                return View();
+                return RedirectToAction("Index", "Login");
             }
 
         }

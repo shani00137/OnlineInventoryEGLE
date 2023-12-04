@@ -1,8 +1,5 @@
-﻿@model IEnumerable<OnlineInventory.Models.InvoiceInfoMD>
-@{
-    ViewBag.Title = "ViewInvoices";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+﻿@model OnlineInventory.Models.InvoiceInfoMD
+
 <script>
     $('.select2').select();
     function show () {
@@ -17,91 +14,14 @@ function hide () {
         //ShowInvoices(sel.value);
     }
 
-    function func_validate() {
-        var chk = 0;
-        debugger;
-        var CustomerID = document.getElementById('ddlCustomers');
-        if (CustomerID.value == 0) {
-            CustomerID.style.border = "2px solid red";
-            chk = 1;
-        }
-        else {
-            CustomerID.style.border = "1px solid #ccc";
-        }
 
-        var FromDate = document.getElementById('FromDate');
-        var ToDate = document.getElementById('ToDate');
-
-        if (FromDate.value == 0) {
-            FromDate.style.border = "2px solid red";
-            chk = 1;
-        }
-        else {
-                 FromDate.style.border = "1px solid #ccc";
-        }
-
-        if (ToDate.value == 0) {
-            ToDate.style.border = "2px solid red";
-            chk = 1;
-        }
-        else {
-            ToDate.style.border = "1px solid #ccc";
-        }
-
-        if (chk != 0)
-            return false;
-        else
-            return true;
-
-
-
-    }
     function ViewInvoices() {
-
-        //if (func_validate() == false) {
-        //    return;
-        //}
-
-        show();
-        $.ajax({
-            type: "Get",
-            url: "/Sales/GetAllInvoices",
-            data: {
-                CustId: $("#ddlCustomers").val(),
-                FromDate: $("#FromDate").val(),
-                ToDate: $("#ToDate").val(),
-                InvoiceNo: $("#InvoiceNo").val()
-            },
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (data) {
-                debugger;
-                $('#invoiceTable tbody').empty();
-                var count = 0;
-                $.each(data, function (i, item) {
-                    count = item.InvoiceNo.replace('INV','');
-                    var rows = "<tr>"
-                        + "<td >" + item.InvoiceNo + "</td>"
-                        + "<td>" +ConvertJsonDateToDateTime(  item.InvoiceDate) + "</td>"
-                        + "<td>" + item.Name + "</td>"
-                        + "<td>" + item.TotalAmount + "</td>"
-
-                        + "<td class='hidden-480'>" + item.Remarks + "</td>"
-                        + "<td>" + "<button onclick='Edit(" + count + ");' class='btn btn-xs btn-info'><i class='icon-pencil bigger-120'></i></button> <span></span> <button onclick='exportInvoice(" + count + ");' class='btn btn-xs btn-success'><i class='icon-print bigger-120'></i></button> " + "</td>"
-
-                        + "</tr>";
-                    $('#invoiceTable tbody').append(rows);
-                });
-                hide();
-            },
-            failure: function (response) {
-                alert(response.responseText);
-            },
-            error: function (response) {
-                alert(response.responseText);
-            }
-        });
-
+        CustId = $("#CustomerId").val();
+        FromDate = $("#FromDate").val();
+        ToDate = $("#ToDate").val();
+        InvoiceNo= $("#InvoiceNo").val()
+        var url = "@Url.Action("ViewInvoices", "Sales")";
+        window.location.href = url + "?CustId=" + CustId + "&FromDate=" + FromDate + "&ToDate=" + ToDate + "&InvoiceNo=" + InvoiceNo;
     }
 
     $(function () {
@@ -111,45 +31,17 @@ function hide () {
         $("#FromDate").datepicker();
         $("#ToDate").datepicker();
     })
-        $(function () {
-        var ddlCustomers = $("#ddlCustomers");
-        ddlCustomers.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
-        var ddlItemList = $("#ddlItemList");
 
-        $("#progressBar").hide();
-        ddlItemList.empty().append('<option selected="selected" value="0" disabled = "disabled">Loading.....</option>');
-
-        $.ajax({
-            type: "Get",
-            url: "/Inventory/LoadGridCustomer",
-            data: { customerId: 0 },
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (response) {
-                ddlCustomers.empty().append('<option selected="selected" value="0">Please select Customer</option>');
-                $.each(response, function () {
-                    ddlCustomers.append($("<option></option>").val(this['CustomerId']).html(this['Name']));
-                });
-            },
-            failure: function (response) {
-                alert(response.responseText);
-            },
-            error: function (response) {
-                alert(response.responseText);
-            }
-        });
-
-    });
     function exportInvoice(inv)
     {
        var url = "@Url.Action("ExportInvoiceReport", "Reports")";
-        var InvoiceNo ='INV'+ inv;
+        var InvoiceNo = inv;
         window.open(url + "?InvoiceNo=" + InvoiceNo , '_blank');
     }
 
     function Edit(val) {
         var url = "@Url.Action("SaleInvoice", "Sales", new { InvoiceNo = "InvNo" })";
-        var InvoiceNo = 'INV' + val;
+        var InvoiceNo =  val;
         url = url.replace("InvNo", InvoiceNo);
         window.location = url;
     }
@@ -191,33 +83,33 @@ function hide () {
                         <div class="panel-body">
                             <div class="col-md-12">
                                 <div class="row">
-                                
+
                                 </div>
 
                                 <div class="=row">
                                     <div class="col-md-3 col-sm-12">
                                         <div class="form-group col-sm-12">
                                             <label class="col-sm-12 control-label no-padding-right">Invoice No </label>
-                                            <input  class="form-control col-sm-12" type="text" id="InvoiceNo" placeholder="Invoice No">
+                                            <input class="form-control col-sm-12" type="text" id="InvoiceNo" placeholder="Invoice No">
 
                                         </div>
                                     </div>
                                     <div class="col-md-3 col-sm-12">
                                         <div class="form-group col-sm-12">
                                             <label class="col-sm-12 control-label no-padding-right">To Customer </label>
-                                            <select class="select2 col-sm-12" id="ddlCustomers" onchange="selectedCustomerChangeEvent(this);"></select>
+                                            @Html.DropDownListFor(m => m.CustomerId, ViewBag.CutomerData as SelectList, "Please Select", new {@id="CustomerId", @class = "form-control select2", required = "required" })
                                         </div>
                                     </div>
                                     <div class="col-md-2 col-sm-12">
                                         <div class="form-group col-sm-12">
                                             <label class="col-sm-12 control-label no-padding-right">From Date </label>
-                                            <input  class="form-control col-sm-12" type="text" id="FromDate" placeholder="From Date">
+                                            <input class="form-control col-sm-12" type="text" id="FromDate" placeholder="From Date">
                                         </div>
                                     </div>
                                     <div class="col-md-2 col-sm-12">
                                         <div class="form-group col-sm-12">
                                             <label class="col-sm-12 control-label no-padding-right">To Date </label>
-                                            <input  class="form-control col-sm-12" type="text" id="ToDate" placeholder="To Date">
+                                            <input class="form-control col-sm-12" type="text" id="ToDate" placeholder="To Date">
 
                                         </div>
                                     </div>
@@ -245,21 +137,48 @@ function hide () {
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var m in Model)
+                                @foreach (var m in Model.InvoiceList)
                                 {
                                     <tr>
-                                        <td>@Html.DisplayFor(modelItem => m.InvoiceNo)</td>
-                                        <td>@Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")</td>
+                                        <td>@Html.DisplayFor(modelItem => m.InvoiceNo)
+                                        
+                                        </td>
+                                        <td>@Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")
+                                        <br>
+                                            <span class="small">@m.CreatedBy</span>
+                                        </td>
                                         <td>@Html.DisplayFor(modelItem => m.Name)</td>
-                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedBy)</td>
-                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.CreatedDate, "{0:d MMM yyyy}")</td>
-                                        <td>@Html.DisplayFor(modelItem => m.Remarks)</td>
-                                        <td></td>
+                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.TotalAmount)</td>                                    
+                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.Remarks)</td>
+                                        <td>
+                                            <button onclick="Edit('@m.InvoiceNo')" class="btn btn-sm btn-warning"> <li class="icon-edit bigger-120"></li>  </button>
+                                            <button onclick="exportInvoice('@m.InvoiceNo')" class="btn btn-sm btn-success"> <li class="icon-print bigger-120"></li>  </button>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
+                        <div class="text-center">
+                            <nav aria-label="...">
+                                <ul class="pagination">
 
+                                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("ViewInvoices", new { page = Model.CurrentPage - 1, pageSize = Model.PageSize })">Previous</a>
+                                    </li>
+
+                                    @for (int i = Math.Max(1, Model.CurrentPage - 5); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 4); i++)
+                                    {
+                                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                            <a class="page-link" href="@Url.Action("ViewInvoices", new { page = i, pageSize = Model.PageSize })">@i</a>
+                                        </li>
+                                    }
+
+                                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                        <a class="page-link" href="@Url.Action("ViewInvoices", new { page = Model.CurrentPage + 1, pageSize = Model.PageSize })">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div><!-- /.col -->
             </div><!-- /.row -->
@@ -268,3 +187,5 @@ function hide () {
     </div><!-- /.row -->
 
 </div><!-- /.page-content -->
+
+

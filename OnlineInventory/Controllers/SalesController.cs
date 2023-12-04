@@ -17,11 +17,24 @@ namespace OnlineInventory.Controllers
         {
             return View();
         }
-        public ActionResult ViewInvoices()
+        public ActionResult ViewInvoices(int? CustId, DateTime? FromDate, DateTime? ToDate, String InvoiceNo, int page = 1, int pageSize = 10, String UnitversityName = null)
         {
+            InvoiceInfoMD obj = new InvoiceInfoMD();
+            obj.PageSize = 20;
             DateTime dtfrom = DateTime.Now.Date;
             DateTime dtTo = DateTime.Now.Date;
-            List<InvoiceInfoMD> obj = SalesDb.GetAllInvoices(0, dtfrom, dtTo);
+            //List<InvoiceInfoMD> obj = SalesDb.GetAllInvoices(CustId, FromDate, ToDate, InvoiceNo);
+            var response = SalesDb.GetAllInvoices(CustId, FromDate, ToDate, InvoiceNo);
+            var CustomerList= CustomerDb.GetCustomerList(0);
+            var totalItems = response.Count();
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+            var paginatedItems = response.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            obj.TotalPages = totalPages;
+            obj.TotalItems = totalItems;
+            obj.InvoiceList = paginatedItems;
+            obj.CurrentPage = page;
+            obj.CustomerId = CustId==null?0: (int)CustId;
+            ViewBag.CutomerData = new SelectList(CustomerList, "CustomerId", "Name"); ;
             return View(obj);
         }
         public ActionResult ViewReturnInvoice()
@@ -46,13 +59,13 @@ namespace OnlineInventory.Controllers
             return View();
         }
 
-        public JsonResult GetAllInvoices(int? CustId, DateTime? FromDate, DateTime? ToDate,String InvoiceNo)
-        {
-            var VouchersFeeEntry = SalesDb.GetAllInvoices(CustId, FromDate, ToDate);
-            var jsonSettings = new JsonSerializerSettings();
-            jsonSettings.DateFormatString = "dd/MM/yyyy";
-            return Json(VouchersFeeEntry, JsonRequestBehavior.AllowGet);
-        }
+        //public JsonResult GetAllInvoices(int? CustId, DateTime? FromDate, DateTime? ToDate,String InvoiceNo)
+        //{
+        //    var VouchersFeeEntry = SalesDb.GetAllInvoices(CustId, FromDate, ToDate, InvoiceNo);
+        //    var jsonSettings = new JsonSerializerSettings();
+        //    jsonSettings.DateFormatString = "dd/MM/yyyy";
+        //    return Json(VouchersFeeEntry, JsonRequestBehavior.AllowGet);
+        //}
         public JsonResult GetAllReturnInvoices()
         {
             var VouchersFeeEntry = SalesDb.GetAllReturnInvoice();
@@ -69,6 +82,7 @@ namespace OnlineInventory.Controllers
         [HttpPost]
         public ActionResult SaveSaleInvoice(SaleInvoiceModel obj)
         {
+            obj.CreatedBy = int.Parse(User.Identity.Name.Split('|')[1].ToString());
             var Response = SalesDb.AddEditSaleInvoice(obj);
             if (Response!="")
                 return Json(new { success = true, responseText = "Saved successfuly!", Caseid = Response }, JsonRequestBehavior.AllowGet);

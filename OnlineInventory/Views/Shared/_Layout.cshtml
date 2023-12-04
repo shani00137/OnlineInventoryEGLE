@@ -21,6 +21,7 @@
     <link href="~/Content/assets/css/select2.css" rel="stylesheet" />
     <script src="~/Content/assets/js/ace-extra.min.js"></script>
     <link href="~/Content/assets/css/chosen.min.css" rel="stylesheet" />
+
 </head>
 
 <body>
@@ -88,7 +89,7 @@
                 <span class="menu-text"></span>
             </a>
 
-            <div class="sidebar" id="sidebar">
+            <div class="sidebar" id="menu">
                 <script type="text/javascript">
                     try { ace.settings.check('sidebar', 'fixed') } catch (e) { }
                 </script>
@@ -111,14 +112,14 @@
                         </a>
 
                         <ul class="submenu" style="display: none;">
-                            <li>
+                            <li id="SaleInovice" onclick="navTo('SaleInovice')">
                                 <a href="@Url.Action("ViewInvoices", "Sales")">
                                     <i class="icon-paper-clip"></i>
                                     <span class="menu-text">Sale Invoice </span>
                                 </a>
                             </li>
 
-                            <li>
+                            <li id="ReturnInvoice" onclick="navTo('ReturnInvoice')">
                                 <a href="@Url.Action("ViewReturnInvoice", "Sales")">
                                     <i class="icon-paper-clip"></i>
                                     <span class="menu-text">Return Invoice </span>
@@ -134,18 +135,23 @@
                             <span class="menu-text">Products </span>
                         </a>
                     </li>
-                    <li>
+                    @if (User.Identity.Name.Split('|')[2].ToString() == "Admin")
+                    { 
+                     <li>
                         <a href="@Url.Action("Customers", "Sales")">
                             <i class="icon-user"></i>
                             <span class="menu-text">Customers </span>
                         </a>
                     </li>
+                    }
+                   
                     <li>
                         <a href="@Url.Action("ReceiptVoucher", "Accounts")">
                             <i class="icon-user"></i>
                             <span class="menu-text">Receipt Voucher </span>
                         </a>
                     </li>
+                   
                     <li>
                         <a href="@Url.Action("CustomerLedger", "Accounts")">
                             <i class="icon-user"></i>
@@ -231,6 +237,7 @@
 <script src="~/Content/assets/js/bootbox.min.js"></script>
 <script src="~/Content/assets/js/select2.min.js"></script>
 <script src="~/Content/assets/js/chosen.jquery.min.js"></script>
+<script src="~/Content/assets/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript">
     $.ajax(
         {
@@ -241,6 +248,31 @@
 
             }
         });
+
+     $(document).ready(function () {
+        debugger;
+        var collapseItem = sessionStorage.getItem('menu');
+        if (collapseItem) {
+            $("#" + collapseItem).parent().addClass("open");
+            $("#" + collapseItem).addClass("open");
+            $("#" + collapseItem).css("display", "block");
+            $("#" + collapseItem).children().removeClass("active");
+        }
+        var li = sessionStorage.getItem('li');
+        if (li) {
+
+            $("#" + li).addClass("active");
+        }
+
+
+    })
+    function viewMenu(val) {
+        sessionStorage.setItem('menu', val);
+    }
+    function navTo(val) {
+        sessionStorage.setItem('li', val)
+    }
 </script>
+
 
 </html>

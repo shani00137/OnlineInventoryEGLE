@@ -9,17 +9,21 @@ namespace OnlineInventory.DAL
 {
     public class SalesDb
     {
-        public static List<InvoiceInfoMD> GetAllInvoices(int? CustomerID, DateTime? FromDate, DateTime? ToDate)
+        public static List<InvoiceInfoMD> GetAllInvoices(int? CustomerID, DateTime? FromDate, DateTime? ToDate,string InvoiceNo)
         {
             using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
             {
                 List<InvoiceInfoMD> list = new List<InvoiceInfoMD>();
                 var Query = (from c in dbContaxt.InvoiceInfoTbls
-                             join m in dbContaxt.CustomerTbls
+                             join m in dbContaxt.CustomerTbls                            
                              on c.CustomerId equals m.CustomerId
                              join u in dbContaxt.UserLoginTbls
                              on c.CreatedBy equals u.LoginId
-                             where m.CustomerId == CustomerID && c.InvoiceDate >= FromDate && c.InvoiceDate <= ToDate
+                             where (CustomerID == null || m.CustomerId == CustomerID) &&
+                            (FromDate == null || c.InvoiceDate >= FromDate) &&
+                            (ToDate == null || c.InvoiceDate <= ToDate) &&
+                   (string.IsNullOrEmpty(InvoiceNo) || c.InvoiceNo.Contains(InvoiceNo.Trim()))
+
                              select new
                              {
                                  c.CreatedDate,
@@ -198,7 +202,7 @@ namespace OnlineInventory.DAL
                         objInvoice.CustomerId = obj.CustomerId;
                         objInvoice.InvoiceDate = obj.InvoiceDate;
                         objInvoice.Remarks = obj.Remarks;
-                        objInvoice.CreatedBy = 1;
+                        objInvoice.CreatedBy = obj.CreatedBy;
                         objInvoice.CreatedDate = DateTime.Now;
                         dbContaxt.InvoiceInfoTbls.Add(objInvoice);
 
