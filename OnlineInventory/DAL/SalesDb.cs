@@ -300,11 +300,11 @@ namespace OnlineInventory.DAL
                     if (obj.ReturnInvoiceNo == null)
                     {
                         int MaxId = 1;
-                        var GetMaxId = dbContaxt.ReturnInvoiceInfoTbls.OrderByDescending(x => x.ReturnInvoiceNo).FirstOrDefault();
+                        var GetMaxId = dbContaxt.ReturnInvoiceInfoTbls.OrderByDescending(x => x.ReturnRecordId).FirstOrDefault();
                         if (GetMaxId != null)
                         {
                             String OrderNo = GetMaxId.ReturnInvoiceNo.ToString();
-                            MaxId = 1 + int.Parse(OrderNo.Substring(4, OrderNo.Length - 4));
+                            MaxId = 1 + int.Parse(OrderNo.Replace("RINV", ""));
                         }
 
                         ReturnInvoiceInfoTbl objInvoice = new ReturnInvoiceInfoTbl();
@@ -348,20 +348,22 @@ namespace OnlineInventory.DAL
                         var SaleInfo = dbContaxt.InvoiceReturnInfoDetailsTbls.Where(x => x.ReturnInvoiceNo == obj.ReturnInvoiceNo).ToList();
                         foreach (var q in SaleInfo)
                         {
-                            var Delete = dbContaxt.ReturnInvoiceInfoTbls.Where(x => x.ReturnRecordId == q.ReturnRecordId).FirstOrDefault();
+                            var Delete = dbContaxt.InvoiceReturnInfoDetailsTbls.Where(x => x.ReturnRecordId == q.ReturnRecordId).FirstOrDefault();
+                            dbContaxt.InvoiceReturnInfoDetailsTbls.Remove(Delete);
                             dbContaxt.SaveChanges();
+                           
                         }
                         foreach (var q in obj.CartList)
                         {
                             InvoiceReturnInfoDetailsTbl invoiceInfoMD = new InvoiceReturnInfoDetailsTbl();
-                            invoiceInfoMD.ReturnInvoiceNo = obj.InvoiceNo;
+                            invoiceInfoMD.ReturnInvoiceNo = obj.ReturnInvoiceNo;
                             invoiceInfoMD.ItemId = q.ItemId;
                             invoiceInfoMD.Quantity = q.Quantity;
                             invoiceInfoMD.Rate = q.Rate;
                             dbContaxt.InvoiceReturnInfoDetailsTbls.Add(invoiceInfoMD);
                         }
                         dbContaxt.SaveChanges();
-                        InvoiceNo = "RINV" + obj.InvoiceNo.ToString();
+                        InvoiceNo = obj.ReturnInvoiceNo;
                         JournalEntriesTbl ObjJournalEntries = dbContaxt.JournalEntriesTbls.Where(a => a.Source == InvoiceNo).FirstOrDefault();
                         ObjJournalEntries.TransactionDate = Convert.ToDateTime(obj.InvoiceDate);
                         ObjJournalEntries.Source = InvoiceNo;
@@ -426,8 +428,46 @@ namespace OnlineInventory.DAL
 
             }
         }
+        //Get Return Invoice 
+        public static List<InvoiceInfoMD> LoadReturnInvoiceByNo(string InvoiceNo)
+        {
+            using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
+            {
+                var query = (from invnfo in dbContaxt.ReturnInvoiceInfoTbls
+                             join invDet in dbContaxt.InvoiceReturnInfoDetailsTbls on invnfo.ReturnInvoiceNo equals invDet.ReturnInvoiceNo
+                             join itms in dbContaxt.ItemsTbls on invDet.ItemId equals itms.ItemId
+                             where (invnfo.ReturnInvoiceNo == InvoiceNo)
+                             select new
+                             {
+                                 ReturnInvoiceNo = invnfo.ReturnInvoiceNo,
+                                 InvoiceDate = invnfo.InvoiceDate,
+                                 CustomerId = invnfo.CustomerId,
+                                 Quantity = invDet.Quantity,
+                                 Rate = invDet.Rate,
+                                 Amount = invDet.Amount,
+                                 ItemId = invDet.ItemId,
+                                 ItemName = itms.ItemName,
+                             });
 
+                var VoucherList = new List<InvoiceInfoMD>();
+                foreach (var itm in query)
+                {
+                    VoucherList.Add(new InvoiceInfoMD()
+                    {
+                        InvoiceNo = itm.ReturnInvoiceNo,
+                        InvoiceDate = itm.InvoiceDate,
+                        CustomerId = itm.CustomerId,
+                        Quantity = itm.Quantity,
+                        Rate = itm.Rate,
+                        Amount = itm.Amount,
+                        ItemId = itm.ItemId,
+                        ItemName = itm.ItemName,
+                    });
+                }
+                return VoucherList;
 
+            }
+        }
 
         public static List<InvoiceInfoMD> LoadCustomerBalances()
         {

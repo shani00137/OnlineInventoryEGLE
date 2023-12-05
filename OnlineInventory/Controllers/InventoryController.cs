@@ -7,6 +7,7 @@ using OnlineInventory.Models;
 using OnlineInventory.DAL;
 using OnlineInventory.DbContext;
 using System.Data.Entity;
+using System.IO;
 
 namespace OnlineInventory.Controllers
 {
@@ -26,15 +27,47 @@ namespace OnlineInventory.Controllers
             //List<ItemsMD> obj = InventoryDB.GetItemsList(0);
             return View();
         }
-
+        //Save AddEdit Session
         [HttpPost]
         public ActionResult AddEditSessions(ItemsMD obj)
         {
-            if (InventoryDB.AddEditItems(obj))
-                return Json(new { success = true, responseText = "Saved successfuly!", Caseid = obj.ItemId }, JsonRequestBehavior.AllowGet);
+            var response = InventoryDB.AddEditItems(obj);
+            if (response>0)
+                return Json(new { success = true, responseText = "Saved successfuly!", Caseid = response }, JsonRequestBehavior.AllowGet);
             else
-                return Json(new { success = false, responseText = "Error While Saving data!", Caseid = obj.ItemId }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, responseText = "Error While Saving data!", Caseid = response }, JsonRequestBehavior.AllowGet);
         }
+        //Save Items Images URL
+        public ActionResult SaveItemPhoto()
+        {            
+            HttpFileCollectionBase files = Request.Files;
+            int ItemId = int.Parse(Request["ItemId"]);
+            if (files.Count > 0)
+            {
+                HttpPostedFileBase file = files[0];
+                string fname;
+
+                // Checking for Internet Explorer  
+                if (Request.Browser.Browser.ToUpper() == "IE" || Request.Browser.Browser.ToUpper() == "INTERNETEXPLORER")
+                {
+                    string[] testfiles = file.FileName.Split(new char[] { '\\' });
+                    fname = testfiles[testfiles.Length - 1];
+                }
+                else
+                {
+                    fname = file.FileName;
+                }
+
+             
+                var FileName = "ItemID" + "_" + ItemId.ToString()+ "_" + fname;
+                // Get the complete folder path and store the file inside it.  
+                fname = Path.Combine(Server.MapPath("~/Content/ItemPhoto/"), FileName);
+                file.SaveAs(fname);
+                var res = InventoryDB.SaveItemPhoto("/Content/ItemPhoto/" + FileName, ItemId);
+            }
+            return Json(new { result = "Save" });
+        }
+        //Upload Photo
 
         public ActionResult LoadGridItems(int CustomerId)
         {

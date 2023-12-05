@@ -1,4 +1,5 @@
-﻿using OnlineInventory.DbContext;
+﻿using OnlineInventory.DAL;
+using OnlineInventory.DbContext;
 using OnlineInventory.Models;
 using OnlineInventory.Utilites.Security;
 using System;
@@ -57,7 +58,21 @@ namespace OnlineInventory.Controllers
             
         }
            
-
+        public ActionResult AddUser()
+        {
+            UserMD userMD = new UserMD();
+            userMD.AllUserList= UserAccount.GetAllUsers();         
+            return View(userMD);
+        }
+        [HttpPost]
+        public ActionResult AddUser(UserMD value)
+        {
+            UserMD userMD = new UserMD();
+            var response = UserAccount.SaveUser(value);
+            ModelState.Clear();
+            userMD.AllUserList = UserAccount.GetAllUsers();
+            return View(userMD);
+        }
         // GET: Login/Edit/5
         public ActionResult Edit(int id)
         {

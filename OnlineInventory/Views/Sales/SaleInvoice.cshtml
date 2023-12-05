@@ -53,7 +53,7 @@
             datatype: JSON,
             data: { InvoiceNo: InvoiceNo },
             success: function (data) {
-                debugger;
+                 
                 if (data.length > 0) {
                     $("#ddlCustomers").val(data[0].CustomerId);
                 var now = new Date(parseInt(data[0].InvoiceDate.substr(6)));
@@ -130,7 +130,7 @@
 
     //ChangeItemEvent
     function ChangeItemEvent(item) {
-        debugger;
+         
         $('#Quanity').empty();
         $('#Rate').empty();
         $('#Amount').empty();
@@ -146,7 +146,7 @@
             datatype: JSON,
             data: { ItemID: item.value },
             success: function (data) {
-                debugger;
+                 
                 $("#Rate").val(data[0].SaleRate);
                 $("#Amount").val(data[0].SaleRate);
                 $('#Quantity').focus().select();
@@ -160,7 +160,7 @@
 
     //change Change Rate Event
     function RateChangeEvent(val) {
-        debugger;
+         
         var Rate = val.value;
         var Quantity = $('#Quantity').val();
         if (Rate > 0 && Quantity>0) {
@@ -172,7 +172,7 @@
 
     //change Change Quanity Event
     function QuantityChangeEvent(val) {
-        debugger;
+         
         var Quantity = val.value;
         var Rate = $('#Rate').val();
         if (Quantity > 0 && Rate>0) {
@@ -186,7 +186,7 @@
     // add to Cart List
     function addToCart()
     {
-        debugger;
+         
         var ItemName = $('#ddlItemList').find('option:selected').text();
         var ItemId = $("#ddlItemList").val();
         var Quantity = $('#Quantity').val();
@@ -226,7 +226,7 @@
         for (let i = 0; i < cartList.length; i++) {
 
             var obj = cartList[i];
-            debugger;
+             
             var Count = i + 1;
             var rows = "<tr>"
                 + "<td class='hidden-480' >" + Count + "</td>"
@@ -248,7 +248,7 @@
     function DeleteCartItem (val)
     {
         if (confirm('Are you sure to delete')) {
-            debugger;
+             
             cartList.splice(val, 1);
             LoadGrid();
 
@@ -290,7 +290,7 @@
             return;
         }
             
-        debugger;
+         
         var InvoiceDate= $("#InvoiceDate").val();
         var TotalAmount = $('#TotalAmount').val();
         if (TotalAmount > 0 && InvoiceDate != null && InvoiceDate != "") {
@@ -309,7 +309,7 @@
                     },
                     success: function (data) {
                         if (data.success) {
-                            debugger;
+                             
                             //oTable = $('#tblSession').DataTable();
                             //oTable.draw();
                             $("#InvoiceNo").val(data.Caseid)
@@ -362,7 +362,7 @@
             datatype: JSON,
             data: { InvoiceNo: InfoiceNo },
             success: function (data) {
-                debugger;
+                 
                 var response = JSON.parse(data);
                 window.location = '/Report/Download?fileGuid=' + response.FileGuid
                     + '&filename=' + response.FileName;

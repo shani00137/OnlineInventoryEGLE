@@ -136,22 +136,22 @@
                         </a>
                     </li>
                     @if (User.Identity.Name.Split('|')[2].ToString() == "Admin")
-                    { 
-                     <li>
-                        <a href="@Url.Action("Customers", "Sales")">
-                            <i class="icon-user"></i>
-                            <span class="menu-text">Customers </span>
-                        </a>
-                    </li>
+                    {
+                        <li>
+                            <a href="@Url.Action("Customers", "Sales")">
+                                <i class="icon-user"></i>
+                                <span class="menu-text">Customers </span>
+                            </a>
+                        </li>
                     }
-                   
+
                     <li>
                         <a href="@Url.Action("ReceiptVoucher", "Accounts")">
                             <i class="icon-user"></i>
                             <span class="menu-text">Receipt Voucher </span>
                         </a>
                     </li>
-                   
+
                     <li>
                         <a href="@Url.Action("CustomerLedger", "Accounts")">
                             <i class="icon-user"></i>
@@ -159,7 +159,12 @@
                         </a>
                     </li>
 
-
+                    <li>
+                        <a href="@Url.Action("AddUser", "Login")">
+                            <i class="icon-user"></i>
+                            <span class="menu-text">Manage User </span>
+                        </a>
+                    </li>
                 </ul><!-- /.nav-list -->
 
                 <div class="sidebar-collapse" id="sidebar-collapse">
@@ -250,7 +255,7 @@
         });
 
      $(document).ready(function () {
-        debugger;
+         
         var collapseItem = sessionStorage.getItem('menu');
         if (collapseItem) {
             $("#" + collapseItem).parent().addClass("open");

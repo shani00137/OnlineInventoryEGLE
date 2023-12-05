@@ -64,6 +64,7 @@
           <Property Name="CustomerId" Type="int" />
           <Property Name="CreatedBy" Type="int" />
           <Property Name="CreatedDate" Type="date" />
+          <Property Name="PhotoURL" Type="nvarchar(max)" />
         </EntityType>
         <EntityType Name="JournalEntriesTbl">
           <Key>
@@ -216,6 +217,7 @@
           <Property Name="CustomerId" Type="Int32" />
           <Property Name="CreatedBy" Type="Int32" />
           <Property Name="CreatedDate" Type="DateTime" Precision="0" />
+          <Property Name="PhotoURL" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="JournalEntriesTbl">
           <Key>
@@ -328,6 +330,7 @@
           <EntitySetMapping Name="ItemsTbls">
             <EntityTypeMapping TypeName="OnlineInvoiceSystemDBModel.ItemsTbl">
               <MappingFragment StoreEntitySet="ItemsTbl">
+                <ScalarProperty Name="PhotoURL" ColumnName="PhotoURL" />
                 <ScalarProperty Name="CreatedDate" ColumnName="CreatedDate" />
                 <ScalarProperty Name="CreatedBy" ColumnName="CreatedBy" />
                 <ScalarProperty Name="CustomerId" ColumnName="CustomerId" />

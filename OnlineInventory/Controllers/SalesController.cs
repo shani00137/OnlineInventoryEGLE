@@ -54,8 +54,9 @@ namespace OnlineInventory.Controllers
             ViewBag.Inv = InvoiceNo;
             return View();
         }
-        public ActionResult SaleInvoiceReturn()
+        public ActionResult SaleInvoiceReturn(string InvoiceNo)
         {
+            ViewBag.Inv = InvoiceNo;
             return View();
         }
 
@@ -104,6 +105,11 @@ namespace OnlineInventory.Controllers
         public ActionResult GetInvoiceByNo(string InvoiceNo)
         {
             var VouchersFeeEntry = SalesDb.LoadInvoiceByNo(InvoiceNo);
+            return Json(VouchersFeeEntry, JsonRequestBehavior.AllowGet);
+        }
+        public ActionResult GetReturnInvoiceByNo(string InvoiceNo)
+        {
+            var VouchersFeeEntry = SalesDb.LoadReturnInvoiceByNo(InvoiceNo);
             return Json(VouchersFeeEntry, JsonRequestBehavior.AllowGet);
         }
 

@@ -21,5 +21,6 @@ namespace OnlineInventory.DbContext
         public Nullable<int> CustomerId { get; set; }
         public Nullable<int> CreatedBy { get; set; }
         public Nullable<System.DateTime> CreatedDate { get; set; }
+        public string PhotoURL { get; set; }
     }
 }

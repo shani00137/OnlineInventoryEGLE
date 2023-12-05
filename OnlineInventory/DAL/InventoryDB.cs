@@ -9,8 +9,9 @@ namespace OnlineInventory.DAL
 {
     public class InventoryDB
     {
-        public static bool AddEditItems(ItemsMD obj)
+        public static int AddEditItems(ItemsMD obj)
         {
+            int ItemId = 0;
             try
             {
                 using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
@@ -28,6 +29,7 @@ namespace OnlineInventory.DAL
                             objItems.ItemCode = obj.ItemCode;
                             dbContaxt.ItemsTbls.Add(objItems);
                             dbContaxt.SaveChanges();
+                            ItemId = objItems.ItemId;
                         }
                         else
                         {
@@ -38,20 +40,36 @@ namespace OnlineInventory.DAL
                             objItems.SaleRate = obj.SaleRate;
                             objItems.CreatedBy = 1;
                             objItems.CreatedDate = DateTime.Now;
-
+                            ItemId = objItems.ItemId;
                             dbContaxt.SaveChanges();
                         }
                     }
                     else
-                        return false;
+                        return ItemId;
                 }
-                return true;
+                return ItemId;
             }
             catch
             {
-                return false;
+                return ItemId;
             }
 
+        }
+        public static string SaveItemPhoto(String Url, int ItemId)
+        {
+            using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
+            {
+                var UpdateQuery = dbContaxt.ItemsTbls.Where(x => x.ItemId == ItemId).FirstOrDefault();
+                if (UpdateQuery != null)
+                {
+                    UpdateQuery.PhotoURL = Url;
+                    dbContaxt.SaveChanges();
+                    return "Save Successfully";
+                }
+                else {
+                    return "Failed to Save image";
+                }
+             }
         }
         public static List<ItemsMD> GetItemsList(int CustomerId)
         {
@@ -66,6 +84,7 @@ namespace OnlineInventory.DAL
                                      ItemId = obj.ItemId,
                                      ItemName = obj.ItemName,
                                      SaleRate = obj.SaleRate,
+                                     PhotoURL = obj.PhotoURL
                                  });
                     var ItemsLst = new List<ItemsMD>();
                     foreach (var itm in query)
@@ -75,6 +94,8 @@ namespace OnlineInventory.DAL
                             ItemId = itm.ItemId,
                             ItemName = itm.ItemName,
                             SaleRate = Convert.ToDouble(itm.SaleRate),
+                            PhotoURL= itm.PhotoURL,
+
                         });
                     }
                     return ItemsLst;
@@ -88,17 +109,24 @@ namespace OnlineInventory.DAL
                                      ItemId = obj.ItemId,
                                      ItemName = obj.ItemName,
                                      SaleRate = obj.SaleRate,
-                                     ItemCode = obj.ItemCode
+                                     ItemCode = obj.ItemCode,
+                                     PhotoURL = obj.PhotoURL
                                  });
                     var ItemsLst = new List<ItemsMD>();
                     foreach (var itm in query)
                     {
+                        var ImageUrl = "/Content/assets/avatars/avatar5.png";
+                        if (itm.PhotoURL != null)
+                        {
+                            ImageUrl = itm.PhotoURL;
+                        }
                         ItemsLst.Add(new ItemsMD()
                         {
                             ItemId = itm.ItemId,
                             ItemName = itm.ItemName,
                             SaleRate = Convert.ToDouble(itm.SaleRate),
-                            ItemCode = itm.ItemCode
+                            ItemCode = itm.ItemCode,
+                            PhotoURL = ImageUrl
                         });
                     }
                     return ItemsLst;

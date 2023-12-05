@@ -20,7 +20,7 @@ function hide () {
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (data) {
-                debugger;
+                 
                 $('#invoiceTable tbody').empty();
                 var count = 0;
                 $.each(data, function (i, item) {
@@ -32,7 +32,7 @@ function hide () {
                         + "<td class='hidden-480'>" +item.CreatedBy + "</td>"
                         + "<td class='hidden-480'>" + ConvertJsonDateToDateTime( item.CreatedDate) + "</td>"
                         + "<td class='hidden-480'>" + item.Remarks + "</td>"
-                        + "<td>" + "<button data-toggle='modal' data-target='#exampleModal' onclick='viewDetail(" + count + ");' class='btn btn-xs btn-info'><i class='icon- icon-book bigger-120'></i></button> "+ "</td>"
+                        + "<td>" + "<button data-toggle='modal' data-target='#exampleModal' onclick='viewDetail(" + count + ");' class='btn btn-xs btn-info'><i class='icon- icon-book bigger-120'></i></button> "+ "<button  onclick='edit("+count+");' class='btn btn-xs btn-warning'><i class='icon- icon-edit bigger-120'></i></button> "+ "</td>"
 
                         + "</tr>";
                     $('#invoiceTable tbody').append(rows);
@@ -84,7 +84,13 @@ function hide () {
                 var day = ('0' + newDate.getDate()).slice(-2);
                 var year = newDate.getFullYear();
                 return day + "/" + month + "/" + year;
-            }
+    }
+    function edit(val) {
+         
+         var url = "@Url.Action("SaleInvoiceReturn", "Sales", new { InvoiceNo = "RINV" })";
+        var InvoiceNo =  val;
+        url = url.replace("RINV", "RINV"+InvoiceNo);
+        window.location = url;}
 </script>
 
 <div class="page-content">

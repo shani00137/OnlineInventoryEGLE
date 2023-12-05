@@ -16,6 +16,7 @@ namespace OnlineInventory.Models
         public double SaleRate { get; set; }
         public int? CustomerId { get; set; }
         public string ItemCode { get; set; }
+        public string PhotoURL { get; set; }
 
 
     }

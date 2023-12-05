@@ -9,7 +9,7 @@
 
     function func_validate() {
         var chk = 0;
-        debugger;
+         
         var ItemName = document.getElementById('ItemName');
         var SaleRate = document.getElementById('SaleRate');
         var CustomerId = document.getElementById('CustomerId');
@@ -62,7 +62,8 @@
                         //oTable.draw();
                         LoadGrid();
                         //alert(data.responseText);
-                        ClearAll();
+                         
+                        saveItemPhoto(data.Caseid)
 
                     } else {
                         alert(data.responseText);
@@ -70,6 +71,42 @@
                 }
             });
     }
+    //save Photo
+    function saveItemPhoto(id) {
+    if (window.FormData !== undefined) {
+
+        var fileUpload = $("#PhotoURL").get(0);
+        var files = fileUpload.files;
+
+        // Create FormData object
+        var fileData = new FormData();
+
+        // Looping over all files and add it to FormData object
+        for (var i = 0; i < files.length; i++) {
+            fileData.append(files[i].name, files[i]);
+        }
+
+        // Adding one more key to FormData object
+        fileData.append('ItemId', id);
+       
+
+        $.ajax({
+            url: '/Inventory/SaveItemPhoto',
+            type: "POST",
+            contentType: false, // Not to set any content header
+            processData: false, // Not to process data
+            data: fileData,
+            success: function (result) {
+
+            },
+            error: function (err) {
+
+            }
+        });
+    } else {
+
+    }
+}
     function exportReport()
     {
         
@@ -116,15 +153,12 @@
                 $.each(data, function (i, item) {
                     count = count + 1;
                     var rows = "<tr>"
+                        +"<td>"+'<img class="pull-left" height="50px"  src='+item.PhotoURL+'>'+"</td>"
                         + "<td >" + item.ItemId + "</td>"
                         + "<td>" + item.ItemCode + "</td>"
                         + "<td>" + item.ItemName + "</td>"
                         + "<td>" + item.SaleRate + "</td>"
-
-                        + "<td>" + "<button onclick='Edit(" + item.ItemId + ");' class='btn btn-xs btn-info'><i class='icon-edit bigger-120'></i></button>" + "</td>"
-                        //+ "<td>"
-                        //+ "< class='btn btn-info'  onclick='Edit(" + item.ItemId + ");'><em class='fa fa-pencil'></em></a> "
-                        //+ "</td>"
+                        + "<td>" + "<button onclick='Edit(" + item.ItemId + ");' class='btn btn-xs btn-info'><i class='icon-edit bigger-120'></i></button>" + "</td>"                
                         + "</tr>";
                     $('#tblItems tbody').append(rows);
                 });
@@ -191,7 +225,14 @@
             </div>
 
         </div>
-
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group col-sm-12">
+                    <strong>Photo</strong>
+                    <input type="file" id="PhotoURL" class="form-control col-sm-12" placeholder="Sale Rate" />
+                </div>
+            </div>
+        </div>
     </div>
     <div class="panel-footer text-right">
 
@@ -209,6 +250,7 @@
 <table id="tblItems" class="table  table-bordered table-hover">
     <thead>
         <tr>
+            <th class=""></th>
             <th class="detail-col">Item No.</th>
             <th class="detail-col">Item Code</th>
             <th class="detail-col">Item Details</th>

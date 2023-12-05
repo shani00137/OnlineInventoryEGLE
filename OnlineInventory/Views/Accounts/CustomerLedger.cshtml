@@ -13,7 +13,7 @@ function hideLoading () {
 }
     function func_validate() {
         var chk = 0;
-        debugger;
+         
         var FromDate = document.getElementById('FromDate');
         var ToDate = document.getElementById('ToDate');
         var CustomerId = document.getElementById('CustomerID');
@@ -70,7 +70,7 @@ function hideLoading () {
               data: { CustomerID: $("#CustomerID").val(), FromDate: $("#FromDate").val(), ToDate: $("#ToDate").val() },
             
               success: function (data) {
-                  debugger;
+                   
                   $('#tblData tbody').empty();
                
                   var openingrow="<tr>" + "<td >"+'<lable> Opeing Balance</lable> '+ "</td>"+ "<td>" +'' + "</td>"+ "<td>" +'' + "</td>"+ "<td>" + '' + "</td>"+ "<td>" + data[0].OpeningBalance + "</td>" + "</tr>";
