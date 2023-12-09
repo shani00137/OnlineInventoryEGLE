@@ -52,14 +52,55 @@ function hide () {
                 var day = ('0' + newDate.getDate()).slice(-2);
                 var year = newDate.getFullYear();
                 return day + "/" + month + "/" + year;
+    }
+    function deleteInvoice (val)
+    {
+        if (confirm('Are you sure to delete this Invoice')) {
+        $.ajax({
+            type: "Get",
+            url: "/Sales/DeleteSaleInovice",
+            data: { InvoiceNo: val },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+               success: function (response) {
+                   AlertNotification();
+                   window.location.reload();
+            },
+            failure: function (response) {
+                alert(response.responseText);
+            },
+            error: function (response) {
+                alert(response.responseText);
             }
+        });
+        }
+           
+    }
+       function AlertNotification() {
+        $("#succesfulAlert").show();;
+        $("#succesfulAlert").fadeTo(2000, 500).slideUp(500, function () {
+            $("#success-alert").slideUp(500);
+        });
+    }
 </script>
 
 <div class="page-content">
     <div class="row">
         <div class="col-xs-12">
             <!-- PAGE CONTENT BEGINS -->
+            <div id="succesfulAlert" hidden="hidden" class="alert alert-block alert-success">
+                <button type="button" class="close" data-dismiss="alert">
+                    <i class="icon-remove"></i>
+                </button>
+                <p>
+                    <strong>
+                        <i class="icon-ok"></i>
+                        Response!
+                    </strong>
+                    Deleted Sucessfuly...;
+                </p>
 
+            </div>
             <div class="row">
                 <div class="col-xs-12">
 
@@ -97,7 +138,7 @@ function hide () {
                                     <div class="col-md-3 col-sm-12">
                                         <div class="form-group col-sm-12">
                                             <label class="col-sm-12 control-label no-padding-right">To Customer </label>
-                                            @Html.DropDownListFor(m => m.CustomerId, ViewBag.CutomerData as SelectList, "Please Select", new {@id="CustomerId", @class = "form-control select2", required = "required" })
+                                            @Html.DropDownListFor(m => m.CustomerId, ViewBag.CutomerData as SelectList, "Please Select", new { @id = "CustomerId", @class = "form-control select2", required = "required" })
                                         </div>
                                     </div>
                                     <div class="col-md-2 col-sm-12">
@@ -140,18 +181,24 @@ function hide () {
                                 @foreach (var m in Model.InvoiceList)
                                 {
                                     <tr>
-                                        <td>@Html.DisplayFor(modelItem => m.InvoiceNo)
-                                        
+                                        <td>
+                                            @Html.DisplayFor(modelItem => m.InvoiceNo)
+
                                         </td>
-                                        <td>@Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")
-                                        <br>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => m.InvoiceDate, "{0:d MMM yyyy}")
+                                            <br>
                                             <span class="small">@m.CreatedBy</span>
                                         </td>
                                         <td>@Html.DisplayFor(modelItem => m.Name)</td>
-                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.TotalAmount)</td>                                    
+                                        <td class="hidden-480">@Html.DisplayFor(modelItem => m.TotalAmount)</td>
                                         <td class="hidden-480">@Html.DisplayFor(modelItem => m.Remarks)</td>
                                         <td>
-                                            <button onclick="Edit('@m.InvoiceNo')" class="btn btn-sm btn-warning"> <li class="icon-edit bigger-120"></li>  </button>
+                                            @if (User.Identity.Name.Split('|')[0].ToString() == "Admin")
+                                            {
+                                                <button onclick="Edit('@m.InvoiceNo')" class="btn btn-sm btn-warning"> <li class="icon-edit bigger-120"></li>  </button>
+                                                <button onclick="deleteInvoice('@m.InvoiceNo')" class="btn btn-sm btn-danger"> <li class="icon-remove bigger-120"></li>  </button>
+                                            }
                                             <button onclick="exportInvoice('@m.InvoiceNo')" class="btn btn-sm btn-success"> <li class="icon-print bigger-120"></li>  </button>
                                         </td>
                                     </tr>

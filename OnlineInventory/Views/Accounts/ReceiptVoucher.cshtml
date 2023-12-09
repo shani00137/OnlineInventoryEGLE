@@ -4,13 +4,13 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<script type="text/javascript" charset="utf8">
+    <script type="text/javascript" charset="utf8">
 
     $(document).ready(function () {
- 
+
         $("#VoucherDate").datepicker();
     });
-   
+
     function func_validate() {
 
         var chk = 0;
@@ -46,7 +46,7 @@
         if (func_validate() == false) {
             return;
         }
-      
+
         $.ajax(
             {
                 type: "POST", //HTTP POST Method
@@ -120,7 +120,8 @@
     }
 
     function Edit(VoucherID) {
-        $.ajax({
+        if (@Html.Raw(Json.Encode(User.Identity.Name.Split('|')[0].ToString())) == "Admin") {
+              $.ajax({
             type: 'GET',
             url: "/Accounts/LoadReceiptVoucherByID",
             datatype: JSON,
@@ -137,9 +138,13 @@
             },
             error: function (data) { }
         });
+        } else {
+            alert('You are Unauthorized');
+        }
+
     }
 
-</script>
+    </script>
 <div class="row">
     <div class="panel panel-info">
         <div class="panel-heading">

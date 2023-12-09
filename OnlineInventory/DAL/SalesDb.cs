@@ -168,6 +168,92 @@ namespace OnlineInventory.DAL
 
             }
         }
+        public static String DeleteSaleInvoice(String InvoiceNo)
+        {
+            var response = "";
+            try
+            {
+                using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
+                {
+                    //delete Sale details
+                    var SaleQuery = dbContaxt.InvoiceInfoTbls.Where(x => x.InvoiceNo == InvoiceNo).FirstOrDefault();
+                    if (SaleQuery != null)
+                    {
+                        dbContaxt.InvoiceInfoTbls.Remove(SaleQuery);
+                        dbContaxt.SaveChanges();
+                    }
+                    //Delete Invoice Details
+                    var SaleDetailsQuery = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.InvoiceNo == InvoiceNo).ToList();
+                    if (SaleDetailsQuery.Count > 0)
+                    {
+                        foreach (var q in SaleDetailsQuery)
+                        {
+                            var DeleteDetails = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.RecordId == q.RecordId).FirstOrDefault();
+                            dbContaxt.InvoiceInfoDetailTbls.Remove(DeleteDetails);
+                            dbContaxt.SaveChanges();
+
+                        }
+                    }
+                    //delete Journey ledger entry
+                    var Jquery = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == InvoiceNo).FirstOrDefault();
+                    if (Jquery != null)
+                    {
+                        dbContaxt.JournalEntriesTbls.Remove(Jquery);
+                        dbContaxt.SaveChanges();
+                    }
+                    response = "Deleted Successfully";
+                }
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            return response;
+        }
+        public static String DeleteReturnSaleInvoice(String InvoiceNo)
+        {
+            var response = "";
+            try
+            {
+                using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
+                {
+                    //delete Sale details
+                    var SaleQuery = dbContaxt.ReturnInvoiceInfoTbls.Where(x => x.ReturnInvoiceNo == InvoiceNo).FirstOrDefault();
+                    if (SaleQuery != null)
+                    {
+                        dbContaxt.ReturnInvoiceInfoTbls.Remove(SaleQuery);
+                        dbContaxt.SaveChanges();
+                    }
+                    //Delete Invoice Details
+                    var SaleDetailsQuery = dbContaxt.InvoiceReturnInfoDetailsTbls.Where(x => x.ReturnInvoiceNo == InvoiceNo).ToList();
+                    if (SaleDetailsQuery.Count > 0)
+                    {
+                        foreach (var q in SaleDetailsQuery)
+                        {
+                            var DeleteDetails = dbContaxt.InvoiceReturnInfoDetailsTbls.Where(x => x.ReturnRecordId == q.ReturnRecordId).FirstOrDefault();
+                            dbContaxt.InvoiceReturnInfoDetailsTbls.Remove(DeleteDetails);
+                            dbContaxt.SaveChanges();
+
+                        }
+                    }
+                    //delete Journey ledger entry
+                    var Jquery = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == InvoiceNo).FirstOrDefault();
+                    if (Jquery != null)
+                    {
+                        dbContaxt.JournalEntriesTbls.Remove(Jquery);
+                        dbContaxt.SaveChanges();
+                    }
+                    response = "Deleted Successfully";
+                }
+            }
+            catch (Exception ex)
+            {
+                response = ex.ToString();
+                throw;
+            }
+            return response;
+        }
         public static String AddEditSaleInvoice(SaleInvoiceModel obj)
         {
             String InvoiceNo = "";
@@ -504,35 +590,35 @@ namespace OnlineInventory.DAL
 
             }
         }
-        public static bool DeleteSaleInvoice(string InvNo)
-        {
-            bool Status = false;
-            using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
-            {
-                try
-                {
-                    var InvoiceDetail = dbContaxt.InvoiceInfoTbls.Where(x => x.InvoiceNo == InvNo).FirstOrDefault();
-                    dbContaxt.InvoiceInfoTbls.Remove(InvoiceDetail);
-                    dbContaxt.SaveChanges();
-                    var InvoiceDetailsQuery = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.InvoiceNo == InvNo).ToList();
-                    foreach (var q in InvoiceDetailsQuery)
-                    {
-                        var Delete = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.RecordId == q.RecordId).FirstOrDefault();
-                        dbContaxt.InvoiceInfoDetailTbls.Remove(Delete);
-                        dbContaxt.SaveChanges();
-                        Status = true;
+        //public static bool DeleteSaleInvoice(string InvNo)
+        //{
+        //    bool Status = false;
+        //    using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
+        //    {
+        //        try
+        //        {
+        //            var InvoiceDetail = dbContaxt.InvoiceInfoTbls.Where(x => x.InvoiceNo == InvNo).FirstOrDefault();
+        //            dbContaxt.InvoiceInfoTbls.Remove(InvoiceDetail);
+        //            dbContaxt.SaveChanges();
+        //            var InvoiceDetailsQuery = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.InvoiceNo == InvNo).ToList();
+        //            foreach (var q in InvoiceDetailsQuery)
+        //            {
+        //                var Delete = dbContaxt.InvoiceInfoDetailTbls.Where(x => x.RecordId == q.RecordId).FirstOrDefault();
+        //                dbContaxt.InvoiceInfoDetailTbls.Remove(Delete);
+        //                dbContaxt.SaveChanges();
+        //                Status = true;
 
-                    }
+        //            }
 
 
-                }
-                catch (Exception ex)
-                {
-                    Status = false;
-                }
-                return Status;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Status = false;
+        //        }
+        //        return Status;
 
-            }
-        }
+        //    }
+        //}
     }
 }

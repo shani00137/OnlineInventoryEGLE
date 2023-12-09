@@ -126,9 +126,14 @@ namespace OnlineInventory.Controllers
         }
         public ActionResult DeleteSaleInovice(String InvoiceNo)
         {
-            bool Status = SalesDb.DeleteSaleInvoice(InvoiceNo);
+            var Status = SalesDb.DeleteSaleInvoice(InvoiceNo);
             return Json(Status, JsonRequestBehavior.AllowGet);
         }
-
+        public ActionResult DeleteReturnSaleInvoice(String InvoiceNo)
+        {
+            var Status = SalesDb.DeleteReturnSaleInvoice(InvoiceNo);
+            return Json(Status, JsonRequestBehavior.AllowGet);
+        }
+        
     }
 }

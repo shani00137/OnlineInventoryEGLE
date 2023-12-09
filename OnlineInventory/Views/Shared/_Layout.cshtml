@@ -135,15 +135,14 @@
                             <span class="menu-text">Products </span>
                         </a>
                     </li>
-                    @if (User.Identity.Name.Split('|')[2].ToString() == "Admin")
-                    {
-                        <li>
-                            <a href="@Url.Action("Customers", "Sales")">
-                                <i class="icon-user"></i>
-                                <span class="menu-text">Customers </span>
-                            </a>
-                        </li>
-                    }
+
+                    <li>
+                        <a href="@Url.Action("Customers", "Sales")">
+                            <i class="icon-user"></i>
+                            <span class="menu-text">Customers </span>
+                        </a>
+                    </li>
+
 
                     <li>
                         <a href="@Url.Action("ReceiptVoucher", "Accounts")">
@@ -158,14 +157,16 @@
                             <span class="menu-text">Customer Ledger </span>
                         </a>
                     </li>
-
-                    <li>
-                        <a href="@Url.Action("AddUser", "Login")">
-                            <i class="icon-user"></i>
-                            <span class="menu-text">Manage User </span>
-                        </a>
-                    </li>
-                </ul><!-- /.nav-list -->
+                    @if (User.Identity.Name.Split('|')[2].ToString() == "Admin")
+                    {
+                        <li>
+                            <a href="@Url.Action("AddUser", "Login")">
+                                <i class="icon-user"></i>
+                                <span class="menu-text">Manage User </span>
+                            </a>
+                        </li>
+                    }
+                    </ul><!-- /.nav-list -->
 
                 <div class="sidebar-collapse" id="sidebar-collapse">
                     <i class="icon-double-angle-left" data-icon1="icon-double-angle-left" data-icon2="icon-double-angle-right"></i>

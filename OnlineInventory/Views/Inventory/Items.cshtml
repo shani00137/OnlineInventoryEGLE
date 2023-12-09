@@ -37,39 +37,43 @@
     }
 
     function SaveItems() {
-        if (func_validate() == false) {
-            return;
-        }
-        $.ajax(
-            {
-                type: "POST", //HTTP POST Method
-                url: "/Inventory/AddEditSessions", // Controller/View
-                data: { //Passing data
-                    ItemId: $("#ItemId").val(),
-                    ItemName: $("#ItemName").val(),
-                    CustomerId: $("#CustomerId").val(),
-                    SaleRate: $("#SaleRate").val(),
-                    ItemCode: $("#ItemCode").val(),
-                },
-                success: function (data) {
-                    if (data.success) {
-                        $("#ItemName").val('');
-                        $("#ItemId").val('0');
-                        $("#SaleRate").val('0');
-                        $("#ItemCode").val('');
-                        AlertNotification();
-                        //oTable = $('#tblSession').DataTable();
-                        //oTable.draw();
-                        LoadGrid();
-                        //alert(data.responseText);
-                         
-                        saveItemPhoto(data.Caseid)
+        if (@User.Identity.Name.Split('|')[1].ToString() == "Admin") {
+            if (func_validate() == false) {
+                return;
+            }
+            $.ajax(
+                {
+                    type: "POST", //HTTP POST Method
+                    url: "/Inventory/AddEditSessions", // Controller/View
+                    data: { //Passing data
+                        ItemId: $("#ItemId").val(),
+                        ItemName: $("#ItemName").val(),
+                        CustomerId: $("#CustomerId").val(),
+                        SaleRate: $("#SaleRate").val(),
+                        ItemCode: $("#ItemCode").val(),
+                    },
+                    success: function (data) {
+                        if (data.success) {
+                            $("#ItemName").val('');
+                            $("#ItemId").val('0');
+                            $("#SaleRate").val('0');
+                            $("#ItemCode").val('');
+                            AlertNotification();
+                            //oTable = $('#tblSession').DataTable();
+                            //oTable.draw();
+                            LoadGrid();
+                            //alert(data.responseText);
 
-                    } else {
-                        alert(data.responseText);
+                            saveItemPhoto(data.Caseid)
+
+                        } else {
+                            alert(data.responseText);
+                        }
                     }
-                }
-            });
+                });
+        }else {
+            alert('You are Unauthorized');
+        }
     }
     //save Photo
     function saveItemPhoto(id) {

@@ -80,7 +80,8 @@
     }
 
     function Edit(customerId) {
-        $.ajax({
+        if (@Html.Raw(Json.Encode(User.Identity.Name.Split('|')[0].ToString()))== "Admin") {
+             $.ajax({
             type: 'GET',
             url: "/Inventory/LoadGridCustomer",
             datatype: JSON,
@@ -98,6 +99,11 @@
             },
             error: function (data) { }
         });
+        }
+        else {
+            alert('unauthorized')
+        }
+       
     }
     function LoadGrid(customerId) {
         $.ajax({
