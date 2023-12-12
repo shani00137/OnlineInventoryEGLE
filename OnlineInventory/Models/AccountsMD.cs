@@ -18,6 +18,7 @@ namespace OnlineInventory.Models
         public double AmountReceived { get; set; }
         public string Remarks { get; set; }
         public int CreatedBy { get; set; }
+        public String UserName { get; set; }
         public DateTime CreatedDate { get; set; }
     }
 

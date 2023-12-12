@@ -44,9 +44,9 @@ namespace OnlineInventory.Controllers
                 return Json(new { success = false, responseText = "Error While Saving data!", Caseid = obj.VoucherID }, JsonRequestBehavior.AllowGet);
         }
 
-        public ActionResult LoadReceiptVouchers()
+        public ActionResult LoadReceiptVouchers(int? CustomerID,String VoucherID)
         {
-            var objVoucherList = AccountsDB.GetVouchersList();
+            var objVoucherList = AccountsDB.GetVouchersList(CustomerID, VoucherID);
             return Json(objVoucherList, JsonRequestBehavior.AllowGet);
         }
         public ActionResult LoadReceiptVoucherByID(int VoucherID)

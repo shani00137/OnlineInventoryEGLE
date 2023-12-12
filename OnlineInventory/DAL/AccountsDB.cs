@@ -107,12 +107,15 @@ namespace OnlineInventory.Models
         }
 
 
-        public static List<ReceiptVoucherMD> GetVouchersList()
+        public static List<ReceiptVoucherMD> GetVouchersList(int? CustomerID, String  VoucherID)
         {
             using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
             {
                 var query = (from obj in dbContaxt.ReceiptVouchers
                              join Cust in dbContaxt.CustomerTbls on obj.CustomerID equals Cust.CustomerId
+                             join user in dbContaxt.UserLoginTbls on obj.CreatedBy equals user.LoginId
+                             where (CustomerID==null || obj.CustomerID== CustomerID) &&
+                            (VoucherID=="" || obj.VoucherNo== VoucherID)
                              select new
                              {
                                  VoucherID = obj.VoucherID,
@@ -122,6 +125,7 @@ namespace OnlineInventory.Models
                                  Name = Cust.Name,
                                  AmountReceived = obj.AmountReceived,
                                  Remarks = obj.Remarks,
+                                 UserName=user.UserName
                              });
                 var VoucherList = new List<ReceiptVoucherMD>();
                 foreach (var itm in query)
@@ -135,6 +139,7 @@ namespace OnlineInventory.Models
                         CustName = itm.Name,
                         AmountReceived = Convert.ToInt32(itm.AmountReceived),
                         Remarks = itm.Remarks,
+                        UserName=itm.UserName
                     });
                 }
                 return VoucherList;

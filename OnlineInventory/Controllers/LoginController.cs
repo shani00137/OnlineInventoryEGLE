@@ -31,7 +31,7 @@ namespace OnlineInventory.Controllers
                 {
                     String EncryptPassword = Encryption.Encrypt(Password);
                     //String EncryptPassword = Password;
-                    var Query = db.UserLoginTbls.Where(x => x.UserName == UserName && x.Password == EncryptPassword).FirstOrDefault();
+                    var Query = db.UserLoginTbls.Where(x => x.UserName == UserName && x.Password == EncryptPassword && x.IsActive==true).FirstOrDefault();
                     if (Query != null)
                     {
                         // User.Identity.Name.Split('|')[1]; = Query.LoginId;
