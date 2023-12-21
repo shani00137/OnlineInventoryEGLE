@@ -85,7 +85,7 @@
         </script>
 
         <div class="main-container-inner">
-            <a class="menu-toggler" id="menu-toggler" href="#">
+            <a class="menu-toggler" id="menu-toggler" onclick="minMenu()" href="#">
                 <span class="menu-text"></span>
             </a>
 
@@ -277,6 +277,11 @@
     }
     function navTo(val) {
         sessionStorage.setItem('li', val)
+    }
+    function minMenu() {      
+        
+        $('.sidebar').toggle();
+    
     }
 </script>
 
