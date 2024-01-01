@@ -98,35 +98,47 @@ namespace OnlineInventory.DAL
                                  c.Debit,
                                  c.Credit,
                                  c.TransactionDate
-                             }).OrderBy(x => x.TransactionDate).ToList();
+                             }).OrderBy(x => x.JEId).ToList();
 
 
                 String Duration = FromDate.ToString("dd-MMM-yyyy") + " To " + ToDate.ToString("dd-MMM-yyyy");
                 double? OpeningBalanceAmount = 0;
+
+                double runningBalance = 0;
                 OpeningBalanceAmount = (dbContaxt.CustomerTbls.Where(x => x.CustomerId == CustomerID).ToList()).Select(x => x.OpeningBal).Sum();
-                var OpeningBalance = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == CustomerInfo.CustomerNo && x.TransactionDate < FromDate).ToList();
-                
+                var OpeningBalance = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == CustomerInfo.CustomerNo && x.TransactionDate <= FromDate).ToList();
+
                 if (OpeningBalance.Count > 0)
                 {
                     double Debit = OpeningBalance.Select(x => x.Debit).Sum();
                     double Credit = OpeningBalance.Select(x => x.Credit).Sum();
                     OpeningBalanceAmount = OpeningBalanceAmount + (Debit - Credit);
+                    runningBalance = (double)OpeningBalanceAmount;
 
                 }
+                else
+                {
+                    runningBalance = (double)OpeningBalanceAmount;
+                }
+                
+                
+              
+                var resultWithBalance = Query.Select(row => new
+                {
+                    row.Source,
+                    row.Reference,
+                    row.JEId,
+                    row.Remarks,
+                    row.Debit,
+                    row.Credit,
+                    row.TransactionDate,
+                    Balance = (runningBalance += (row.Debit - row.Credit))
+                }).ToList();
                 if (Query.Count > 0)
                 {
-                    foreach (var q in Query)
+                    foreach (var q in resultWithBalance)
                     {
 
-
-                        double CurrentBalance = 0;
-                        var CurrentBalanceQuery = Query.Where(x => x.JEId <= q.JEId).ToList();
-                        if (CurrentBalanceQuery.Count > 0)
-                        {
-                            double Debit = (double)CurrentBalanceQuery.Select(x => x.Debit).Sum();
-                            double Credit = (double)CurrentBalanceQuery.Select(x => x.Credit).Sum();
-                            CurrentBalance = Debit - Credit;
-                        }
                         var SaleQuery = (from c in dbContaxt.InvoiceInfoDetailTbls
                                          join s in dbContaxt.ItemsTbls on c.ItemId equals s.ItemId
                                          where c.InvoiceNo == q.Source
@@ -143,13 +155,13 @@ namespace OnlineInventory.DAL
                         {
                             foreach (var s in SaleQuery)
                             {
-                                ddt.Rows.Add(q.Source, q.TransactionDate, CustomerInfo.Name, s.ItemId, s.ItemName, s.Quantity, s.Rate, q.Debit, q.Credit, CurrentBalance, OpeningBalanceAmount, Duration, q.Source);
+                                ddt.Rows.Add(q.Source, q.TransactionDate, CustomerInfo.Name, s.ItemId, s.ItemName, s.Quantity, s.Rate, q.Debit, q.Credit, q.Balance, OpeningBalanceAmount, Duration, q.Source);
                             }
 
                         }
                         else
                         {
-                            ddt.Rows.Add(q.Source, q.TransactionDate, CustomerInfo.Name, "", "", 0, 0, q.Debit, q.Credit, CurrentBalance, OpeningBalanceAmount, Duration, q.Source);
+                            ddt.Rows.Add(q.Source, q.TransactionDate, CustomerInfo.Name, "", "", 0, 0, q.Debit, q.Credit, q.Balance, OpeningBalanceAmount, Duration, q.Source);
                         }
 
 
@@ -175,56 +187,65 @@ namespace OnlineInventory.DAL
             using (OnlineInvoiceSystemDBEntities dbContaxt = new OnlineInvoiceSystemDBEntities())
             {
 
-
                 var CustomerInfo = dbContaxt.CustomerTbls.Where(x => x.CustomerId == CustomerID).FirstOrDefault();
                 var Query = (from c in dbContaxt.JournalEntriesTbls
-                             join a in dbContaxt.CustomerTbls on c.Reference equals a.CustomerNo
                              where c.Reference == CustomerInfo.CustomerNo && c.TransactionDate >= FromDate && c.TransactionDate <= ToDate
                              select new
                              {
-                                 c.Debit,
-                                 c.Credit,
                                  c.Source,
-                                 c.CreatedDate,
                                  c.Reference,
                                  c.JEId,
-                                 a.Name,
-                                 a.Phone,
-                                 a.Mobile,
-                                 a.Address,
                                  c.Remarks,
-                                 c.TransactionDate,
-                             }).ToList();
+                                 c.Debit,
+                                 c.Credit,
+                                 c.TransactionDate
+                             }).OrderBy(x => x.JEId).ToList();
 
 
-
-
-
-                String Duration = FromDate.ToString("dd-MMM-yyyy") + " TO " + ToDate.ToString("dd-MMM-yyyy");
-                var OpeningBalance = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == CustomerInfo.CustomerNo && x.TransactionDate < FromDate).ToList();
+                String Duration = FromDate.ToString("dd-MMM-yyyy") + " To " + ToDate.ToString("dd-MMM-yyyy");
                 double? OpeningBalanceAmount = 0;
+
+                double runningBalance = 0;
                 OpeningBalanceAmount = (dbContaxt.CustomerTbls.Where(x => x.CustomerId == CustomerID).ToList()).Select(x => x.OpeningBal).Sum();
+                var OpeningBalance = dbContaxt.JournalEntriesTbls.Where(x => x.Reference == CustomerInfo.CustomerNo && x.TransactionDate <= FromDate).ToList();
 
                 if (OpeningBalance.Count > 0)
                 {
                     double Debit = OpeningBalance.Select(x => x.Debit).Sum();
                     double Credit = OpeningBalance.Select(x => x.Credit).Sum();
                     OpeningBalanceAmount = OpeningBalanceAmount + (Debit - Credit);
+                    runningBalance = (double)OpeningBalanceAmount;
 
                 }
+                else
+                {
+                    runningBalance = (double)OpeningBalanceAmount;
+                }
 
-                foreach (var q in Query)
+
+
+                var resultWithBalance = Query.Select(row => new
+                {
+                    row.Source,
+                    row.Reference,
+                    row.JEId,
+                    row.Remarks,
+                    row.Debit,
+                    row.Credit,
+                    row.TransactionDate,
+                    Balance = (runningBalance += (row.Debit - row.Credit))
+                }).ToList();
+                foreach (var q in resultWithBalance)
                 {
                     list.Add(new SaleInvoiceModel
                     {
-                        Reference = q.Reference,
-                        Name = q.Name,
-                        CreatedDate = q.CreatedDate,
+                        Reference = q.Reference,                     
                         Debit = q.Debit,
                         Credit = q.Credit,
                         InvoiceNo = q.Source,
                         InvoiceDate = Convert.ToDateTime(q.TransactionDate),
-                        OpeningBalance = OpeningBalanceAmount
+                        OpeningBalance = OpeningBalanceAmount,
+                        Balance=Math.Round( q.Balance,2)
                     });
                     //ddt.Rows.Add(q.Reference,q.CreatedDate,q.Name,q.Debit,q.Credit,0);
 

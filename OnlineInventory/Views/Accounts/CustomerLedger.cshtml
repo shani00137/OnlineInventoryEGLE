@@ -76,16 +76,14 @@ function hideLoading () {
                   var openingrow="<tr>" + "<td >"+'<lable> Opeing Balance</lable> '+ "</td>"+ "<td>" +'' + "</td>"+ "<td>" +'' + "</td>"+ "<td>" + '' + "</td>"+ "<td>" + data[0].OpeningBalance + "</td>" + "</tr>";
                   $('#tblData tbody').append(openingrow);
                   var balance = data[0].OpeningBalance;
-                  $.each(data, function (i, item) {
-                      var currentBalance = item.Debit - item.Credit;
-                      balance += currentBalance;
+                  $.each(data, function (i, item) {                   
                       
                     var rows = "<tr>"
                         + "<td >" + item.InvoiceNo + "</td>"
                         + "<td>" +ConvertJsonDateToDateTime( item.InvoiceDate) + "</td>"                      
                         + "<td>" + item.Debit + "</td>"
                         + "<td>" + item.Credit + "</td>"
-                          + "<td>" + balance + "</td>"
+                          + "<td>" + item.Balance + "</td>"
 
                         + "</tr>";
                     $('#tblData tbody').append(rows);

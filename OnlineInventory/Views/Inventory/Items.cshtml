@@ -37,7 +37,7 @@
     }
 
     function SaveItems() {
-        if (@User.Identity.Name.Split('|')[1].ToString() == "Admin") {
+        if (@Html.Raw(Json.Encode(User.Identity.Name.Split('|')[0].ToString())) == "Admin") {
             if (func_validate() == false) {
                 return;
             }

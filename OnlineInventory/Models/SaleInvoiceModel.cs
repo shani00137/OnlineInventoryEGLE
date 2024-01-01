@@ -31,6 +31,7 @@ namespace OnlineInventory.Models
         public string ItemName { get;  set; }
         public string Reference { get;  set; }
         public Nullable<double>  OpeningBalance { get;  set; }
+        public Nullable<double> Balance { get; set; }
     }
     public class SaleInvoiceDetailModel
     {
